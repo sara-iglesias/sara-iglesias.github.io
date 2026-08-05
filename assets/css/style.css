@@ -1,0 +1,704 @@
+/* ============================================================
+   Sara Iglesias — Portfolio · Recreación fiel en HTML/CSS/JS
+   ============================================================ */
+
+:root {
+  --bg: #ffffff;
+  --ink: #000000;
+  --ink-soft: rgba(0, 0, 0, 0.45);
+  --line: rgba(0, 0, 0, 0.12);
+  --accent: #EDED0C;           /* amarillo del typewriter */
+  --card-bg: #F5F5F7;          /* tarjetas de servicios */
+
+  --font: "Inter", -apple-system, sans-serif;
+  --track-tight: -0.06em;
+  --track-body: -0.04em;
+
+  --pad-x: clamp(20px, 2.8vw, 44px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 0.9s;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 96px; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: var(--track-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { display: block; max-width: 100%; }
+
+/* ============ CABECERA ============ */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px var(--pad-x);
+  z-index: 90;
+  /* La opacidad la ajusta el JS al scrollear: se aclara al bajar */
+  transition: opacity 0.25s var(--ease);
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand svg { width: 46px; height: 33px; flex: none; overflow: visible; }
+
+/* Hover del logo: las piezas se "aprietan" levemente y el texto se abre.
+   Deltas tomados del sitio original (variante hover de Framer). */
+.brand svg path { transition: transform 0.45s var(--ease); transform-box: fill-box; }
+/* paths: 1=línea base · 2=colita · 3=aro izq · 4=aro der */
+.brand:hover svg path:nth-child(4) { transform: translate(1.5px, -1.5px); }
+.brand:hover svg path:nth-child(3) { transform: translate(-1.5px, 1.5px); }
+.brand:hover svg path:nth-child(2) { transform: translate(1px, 1px); }
+
+.brand .txt { transition: letter-spacing 0.45s var(--ease); }
+.brand:hover .txt { letter-spacing: -0.005em; }
+.brand .txt { font-size: 15px; font-weight: 500; line-height: 1.35; letter-spacing: var(--track-body); }
+.brand .txt span { display: block; color: var(--ink-soft); font-weight: 400; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+/* Selector de idioma (pill) */
+.lang {
+  position: relative;
+  background: rgba(245,245,247,0.9);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.lang summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lang summary::-webkit-details-marker { display: none; }
+.lang summary::after { content: "⌄"; font-size: 12px; transform: translateY(-2px); }
+.lang .opts {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 120px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+.lang .opts a { display: block; padding: 8px 12px; border-radius: 8px; }
+.lang .opts a:hover { background: var(--card-bg); }
+
+/* Botón de menú (círculo negro con líneas) */
+.menu-btn {
+  width: 46px; height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: #111;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.3s var(--ease);
+}
+.menu-btn:hover { transform: scale(1.06); }
+.menu-btn .bars {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 10px;
+}
+.menu-btn .bars::before,
+.menu-btn .bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: #fff;
+  transition: transform 0.35s var(--ease), top 0.35s var(--ease);
+}
+.menu-btn .bars::before { top: 0; }
+.menu-btn .bars::after  { top: 8px; }
+
+body.menu-open .menu-btn .bars::before { top: 4px; transform: rotate(45deg); }
+body.menu-open .menu-btn .bars::after  { top: 4px; transform: rotate(-45deg); }
+
+/* Overlay del menú */
+.menu-overlay {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(35vw, 520px);
+  background: #111;
+  color: #fff;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 clamp(28px, 4vw, 66px);
+  transform: translateX(100%);
+  transition: transform 0.55s var(--ease);
+}
+body.menu-open .menu-overlay { transform: none; }
+
+/* Velo oscuro sobre el resto de la página */
+.menu-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 79;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease);
+}
+body.menu-open .menu-scrim { opacity: 1; pointer-events: auto; }
+
+.menu-overlay nav a {
+  display: block;
+  font-size: clamp(30px, 3.4vw, 46px);
+  font-weight: 400;
+  letter-spacing: var(--track-tight);
+  line-height: 1.45;
+  color: #fff;
+  transition: color 0.25s;
+}
+.menu-overlay nav a:hover { color: rgba(255, 255, 255, 0.55); }
+
+.menu-overlay .block { margin-top: 7vh; }
+.menu-overlay .block h6 {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 10px;
+}
+.menu-overlay .block a,
+.menu-overlay .block li {
+  display: block;
+  font-size: 17px;
+  color: #fff;
+  padding: 2px 0;
+  transition: color 0.25s;
+}
+.menu-overlay .block a:hover { color: rgba(255, 255, 255, 0.55); }
+
+/* ============ HERO ============ */
+.hero {
+  min-height: 86svh;              /* deja asomar las tarjetas al cargar */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15vh var(--pad-x) 0;
+}
+
+.hero h1 {
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  line-height: 1.05;
+}
+
+.typeline { min-height: 1.1em; }
+/* La palabra que se reescribe va en el color del texto; sólo "solutions"
+   (marcada con .accent desde el JS) aparece en el color acento. */
+.typeline .typed { color: var(--ink); transition: color 0.2s var(--ease); }
+.typeline .typed.accent { color: var(--accent); }
+/* Hover sobre trabajos oscuros (54, Cero): la palabra sigue al texto (blanco);
+   "solutions" mantiene el acento, que contrasta bien sobre oscuro. */
+body.works-dark .typeline .typed { color: #fff; }
+body.works-dark .typeline .typed.accent { color: var(--accent); }
+/* Hover sobre Churba/Núcleo (verde/amarillo): el acento no contrasta → blanco. */
+body.works-bright .typeline .typed.accent { color: #fff; }
+.typeline .caret {
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  background: var(--ink);
+  margin-left: 4px;
+  vertical-align: -0.06em;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.hero p {
+  max-width: 600px;
+  margin-top: 40px;
+  font-size: 17px;
+}
+
+/* Animación de entrada por líneas */
+.reveal-line { overflow: hidden; }
+/* El overflow recorta los descendentes (la "y" de "Soy"); un poco de aire abajo,
+   compensado con margen negativo para no cambiar el interlineado. */
+.hero .reveal-line { padding-bottom: 14px; margin-bottom: -14px; }
+.reveal-line > * { display: block; transform: translateY(110%); animation: rise var(--dur) var(--ease) forwards; }
+.reveal-line:nth-of-type(2) > * { animation-delay: 0.1s; }
+.reveal-line:nth-of-type(3) > * { animation-delay: 0.2s; }
+@keyframes rise { to { transform: translateY(0); } }
+
+/* ---------- Intro de la home (typewriter) ----------
+   Arranca en blanco: solo el contenido real se oculta (no los overlays
+   fijos como el scrim del menú). Al arrancar "identities" todo entra con
+   un slide-in sutil (clase .home-revealed, vía JS). */
+html.home-intro .site-header,
+html.home-intro .section,
+html.home-intro .works,
+html.home-intro .site-footer {
+  opacity: 0;
+  transform: translateY(22px);
+}
+html.home-intro .site-header { transform: translateY(-12px); }
+html.home-intro.home-revealed .site-header,
+html.home-intro.home-revealed .section,
+html.home-intro.home-revealed .works,
+html.home-intro.home-revealed .site-footer {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+/* Botón para saltear la animación de intro (sólo ícono) */
+.intro-skip {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: 6vh;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.94);
+  color: #111;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s var(--ease), visibility 0.35s var(--ease), transform 0.2s var(--ease);
+}
+.intro-skip.show { opacity: 1; visibility: visible; }
+.intro-skip:hover { transform: translateX(-50%) scale(1.07); }
+.intro-skip svg { width: 24px; height: 24px; display: block; margin-left: 2px; }
+
+html.home-intro.home-revealed .services-filter { transition-delay: 0.1s; }
+html.home-intro.home-revealed .works { transition-delay: 0.22s; }
+
+/* Durante la intro (antes de revelar) bloqueamos el scroll y quedamos arriba */
+html.home-intro:not(.home-revealed),
+html.home-intro:not(.home-revealed) body { overflow: hidden; height: 100%; }
+
+/* El hero: sin animación de entrada durante la intro; JS revela por línea */
+html.home-intro .hero .reveal-line > * { animation: none; transform: none; }
+html.home-intro .hero .reveal-line { opacity: 0; }
+html.home-intro .hero .reveal-line.on { opacity: 1; transition: opacity 0.4s var(--ease); }
+
+/* Secuencia de colores de la intro: el fondo transiciona y el texto del
+   hero se mantiene legible (blanco sobre fondos oscuros). */
+body.intro-bg { transition: background-color 0.85s var(--ease); }
+body.intro-bg .hero h1,
+body.intro-bg .hero .typeline .typed { color: #111; transition: color 0.4s var(--ease); }
+body.intro-bg.on-dark .hero h1,
+body.intro-bg.on-dark .hero .typeline .typed { color: #fff; }
+/* Las primeras palabras del intro (sobre color) van en blanco */
+body.intro-bg .hero .typeline .typed.introwhite { color: #fff !important; }
+/* "solutions" en amarillo acento aun sobre el fondo magenta */
+body.intro-bg .hero .typeline .typed.accent { color: var(--accent) !important; }
+body.intro-bg .typeline .caret { background: #111; }
+body.intro-bg.on-dark .typeline .caret { background: #fff; }
+
+/* Reveals al scrollear */
+.io-reveal { opacity: 0; transform: translateY(30px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.io-reveal.is-in { opacity: 1; transform: none; }
+
+/* ============ GRILLA DE TRABAJOS ============ */
+.works {
+  padding: 0 var(--pad-x) 10vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px 28px;
+}
+
+.work-card { cursor: none; }
+.work-card .frame { overflow: hidden; aspect-ratio: 706 / 530; }
+.work-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--ease);
+}
+.work-card:hover img { transform: scale(1.045); }
+
+.work-card h3 {
+  margin-top: 18px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: var(--track-body);
+}
+.work-card .cats { margin-top: 2px; font-size: 16px; color: var(--ink-soft); }
+.work-card .cats i { font-style: normal; padding: 0 6px; }
+
+/* Pill "View" que sigue el cursor sobre las tarjetas */
+.view-pill {
+  position: fixed;
+  top: 0; left: 0;
+  width: 86px; height: 86px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+  pointer-events: none;
+  z-index: 60;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.3s var(--ease);
+}
+.view-pill.is-on { transform: translate(-50%, -50%) scale(1); }
+
+/* ============ SECCIONES ============ */
+.section { padding: 12vh var(--pad-x); }
+
+.section h2 {
+  font-size: clamp(38px, 4.6vw, 64px);
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  line-height: 1;
+}
+
+/* Education / Experience / Services / Tools son subsecciones de About:
+   van un escalón por debajo del título principal */
+.section.sub h2 {
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  line-height: 1;
+}
+
+/* ---- About (con modelo 3D) ---- */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 48px;
+}
+.about-left { display: flex; flex-direction: column; gap: 9vh; }
+
+.btn {
+  align-self: flex-start;
+  display: inline-block;
+  background: #111;
+  color: #fff;
+  border-radius: 999px;
+  padding: 14px 26px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: transform 0.3s var(--ease), background 0.3s;
+}
+.btn:hover { transform: scale(1.04); background: #000; }
+
+.bio p { max-width: 620px; margin-bottom: 20px; }
+.bio strong { font-weight: 600; }
+
+.model-wrap { width: 100%; max-width: 400px; height: 400px; justify-self: end; }
+model-viewer { width: 100%; height: 100%; background: transparent; }
+
+/* ---- Filas: Educación / Experiencia ---- */
+.split { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
+.split h2 { position: sticky; top: 100px; align-self: start; }
+
+.rows .row { padding: 26px 0; }
+.rows .row .role { font-weight: 500; font-size: 19px; }
+.rows .row .years { color: var(--ink-soft); margin-top: 4px; }
+.rows .row .desc { color: var(--ink-soft); margin-top: 10px; max-width: 640px; }
+
+/* ---- Servicios ---- */
+.services-grid {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+}
+.svc {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 30px 30px 40px;
+  grid-column: span 2;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+.svc.wide { grid-column: span 3; }   /* fila 1: dos tarjetas grandes */
+.svc .num { font-size: 15px; margin-bottom: 44px; }
+.svc h4 { font-size: clamp(24px, 2.4vw, 34px); font-weight: 500; letter-spacing: var(--track-tight); margin-bottom: 18px; }
+.svc p { font-size: 16px; color: var(--ink-soft); max-width: 520px; }
+
+/* ---- Herramientas ---- */
+.tools-rows { display: flex; flex-direction: column; }
+.tools-rows .trow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 30px 0;
+}
+.tools-rows .cat { font-weight: 500; font-size: 19px; display: flex; align-items: flex-start; gap: 10px; }
+.tools-rows .pro {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--card-bg);
+  border-radius: 6px;
+  padding: 3px 7px;
+  transform: translateY(3px);
+}
+.tools-rows .items li { color: var(--ink-soft); font-size: 19px; padding: 3px 0; }
+
+/* ============ CONTACTO ============ */
+.contact-form { margin-top: 46px; max-width: 760px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 12px; }
+
+.contact-form .field {
+  background: #F2F2F2;
+  border-radius: 4px;
+  padding: 12px;
+}
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 14px;
+  letter-spacing: var(--track-body);
+  color: var(--ink);
+  resize: none;
+}
+.contact-form input:focus,
+.contact-form textarea:focus { outline: none; }
+.contact-form textarea { min-height: 156px; }
+.contact-form .field:focus-within { box-shadow: 0 0 0 1px rgba(0,0,0,0.18); }
+
+.contact-form button {
+  width: 100%;
+  margin-top: 12px;
+  background: #000;
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  padding: 13px;
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.25s;
+}
+.contact-form button:hover { opacity: 0.85; }
+
+.contact-info { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 60px; max-width: 760px; }
+.contact-info h6 { font-size: 17px; font-weight: 400; color: var(--ink-soft); margin-bottom: 12px; }
+.contact-info li { padding: 3px 0; font-size: 17px; }
+.contact-info a:hover { color: var(--ink-soft); }
+
+/* ============ FOOTER ============ */
+.site-footer {
+  padding: 10vh var(--pad-x) 40px;
+  border-top: 1px solid var(--line);
+}
+
+.cta {
+  display: inline-block;
+  font-size: clamp(38px, 4.5vw, 60px);
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  line-height: 1;
+  margin-bottom: 9vh;
+  position: relative;
+}
+.cta::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -6px;
+  height: 2px; width: 100%;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease);
+}
+.cta:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.footer-cols {
+  display: grid;
+  grid-template-columns: 3fr 3fr 3fr 1fr;
+  gap: 32px;
+}
+.footer-cols h6 { font-size: 17px; font-weight: 400; color: var(--ink-soft); margin-bottom: 14px; }
+.footer-cols li { padding: 3px 0; font-size: 17px; }
+.footer-cols a { transition: color 0.25s; }
+.footer-cols a:hover { color: var(--ink-soft); }
+.copyright { color: var(--ink-soft); font-size: 17px; text-align: right; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .works { grid-template-columns: 1fr; gap: 48px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .model-wrap { justify-self: start; }
+  .split { grid-template-columns: 1fr; }
+  .split h2 { position: static; }
+  .services-grid { grid-template-columns: 1fr; }
+  .services-filter .services-grid { min-height: 0; }
+  .svc { grid-column: span 1; }
+  .tools-rows .trow { grid-template-columns: 1fr; gap: 10px; }
+  .footer-cols { grid-template-columns: 1fr 1fr; }
+  .menu-overlay { width: 100%; }
+  .form-row, .contact-info { grid-template-columns: 1fr; }
+  .svc.wide { grid-column: span 1; }
+  .copyright { text-align: left; }
+  .view-pill { display: none; }
+  .work-card { cursor: pointer; }
+}
+
+/* ============ ACCESIBILIDAD ============ */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line > * { animation: none; transform: none; }
+  .io-reveal { opacity: 1; transform: none; transition: none; }
+  .typeline .caret { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ---- Estado del envío del formulario ---- */
+.form-status {
+  margin-top: 14px;
+  font-size: 14px;
+  min-height: 20px;
+  color: var(--ink-soft);
+}
+.form-status.ok  { color: #1a7f37; }
+.form-status.err { color: #b3261e; }
+
+/* ---------- Home: fondo según el trabajo en hover ---------- */
+body { transition: background-color 0.35s ease; }
+/* Colores oscuros (+54, Cero): texto en blanco para contraste */
+body.works-dark { color: #fff; --ink-soft: rgba(255,255,255,0.65); }
+body.works-dark .brand svg path[stroke="#000"] { stroke: #fff; }
+
+/* ---------- Servicios: chips de filtro (una línea, seleccionables) ---------- */
+.section.services-filter { padding: 5vh var(--pad-x) 1.2vh; }
+.services-filter .services-grid {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: start;
+  /* Reserva el alto de una caja desplegada (título + 3 renglones) para que
+     al abrirse no empuje los trabajos de abajo. */
+  align-content: start;
+  min-height: 150px;
+}
+.svc-chip {
+  appearance: none; -webkit-appearance: none;
+  display: block; width: 100%; text-align: left;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease),
+              border-color 0.25s var(--ease);
+  -webkit-user-select: none; user-select: none;
+}
+/* Los hijos no interceptan el clic: siempre llega al botón (incl. el círculo) */
+.svc-chip * { pointer-events: none; }
+.svc-chip__head { display: flex; align-items: center; gap: 10px; }
+.svc-chip__name {
+  font-size: 15px; font-weight: 600;
+  letter-spacing: var(--track-body);
+}
+.svc-chip .dot {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 1.6px solid var(--ink-soft);
+  flex: none; position: relative;
+  transition: background 0.2s, border-color 0.2s;
+}
+/* La descripción vive dentro de la caja y se despliega en hover/selección */
+.svc-chip__desc {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0;
+  transition: grid-template-rows 0.32s var(--ease),
+              opacity 0.28s var(--ease), margin-top 0.32s var(--ease);
+}
+.svc-chip__desc > span {
+  overflow: hidden;
+  min-height: 0;
+  font-size: 15px; line-height: 1.45;
+  letter-spacing: var(--track-body);
+  color: var(--ink-soft);
+}
+.svc-chip:hover .svc-chip__desc,
+.svc-chip.active .svc-chip__desc {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 12px;
+}
+/* Seleccionada: la caja NO cambia de color; sólo se resalta el borde y el
+   círculo del tick se rellena (negro con la tilde blanca). */
+.svc-chip.active { border-color: var(--ink); }
+.svc-chip.active .dot { background: var(--ink); border-color: var(--ink); }
+.svc-chip.active .dot::after {
+  content: ""; position: absolute; left: 5px; top: 2px;
+  width: 4px; height: 8px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.svc-chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Modo oscuro (hover sobre trabajos con tipografía blanca) */
+body.works-dark .svc-chip { color: #fff; border-color: rgba(255,255,255,0.28); }
+body.works-dark .svc-chip .dot { border-color: rgba(255,255,255,0.6); }
+body.works-dark .svc-chip.active { border-color: #fff; }
+body.works-dark .svc-chip.active .dot { background: #fff; border-color: #fff; }
+body.works-dark .svc-chip.active .dot::after { border-color: var(--ink); }
+
+/* Trabajos: se ocultan al filtrar */
+.work-card { transition: opacity 0.3s var(--ease); }
+.work-card.filtered-out { display: none; }
+.works-empty {
+  grid-column: 1 / -1;
+  padding: 40px 0;
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+/* ---------- Cabecera: fade al bajar, opacidad plena al hacer hover ---------- */
+.site-header .brand,
+.site-header .lang,
+.site-header .menu-btn {
+  opacity: var(--hfade, 1);
+  transition: opacity 0.25s var(--ease);
+}
+.site-header .brand:hover,
+.site-header .lang:hover,
+.site-header .menu-btn:hover { opacity: 1; }
+
+/* ---------- Grain natural en movimiento (todo el sitio) ----------
+   La capa la inyecta main.js: un SVG con feTurbulence cuya "semilla" se
+   anima, así el ruido se REGENERA en cada cuadro (no se traslada en bloque).
+   Es liviano: el filtro corre sobre un mosaico chico que se tilea. */
+.grain-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.5;
+}
+

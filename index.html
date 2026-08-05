@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Intro: arranca en blanco (se quita en cuanto la anima el JS; safety a los 9s) -->
+  <script>(function(){var h=document.documentElement;var seen;try{seen=sessionStorage.getItem('introSeen')==='1';}catch(e){}if(seen)return;h.classList.add('home-intro');if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);window.__introSafety=setTimeout(function(){h.classList.remove('home-intro');},20000);})();</script>
+  <title>Sara Iglesias</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="description" content="Discover Sara's Design Portfolio." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Visor 3D (Google model-viewer) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+  <!-- Botón para saltear la animación de intro -->
+  <button class="intro-skip" id="introSkip" type="button" aria-label="Skip intro">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l11 7-11 7V5z" fill="currentColor"/><rect x="17.5" y="5" width="3" height="14" rx="1.2" fill="currentColor"/></svg>
+  </button>
+
+  <!-- ======== CABECERA ======== -->
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Sara Iglesias — Home">
+      <!-- Logo -->
+      <svg viewBox="0 0 67.5 47.999" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M 2 46.5 L 40 46.5" fill="none" stroke="#000" stroke-width="2.75" stroke-linecap="round"/>
+        <path d="M 48.83 46.596 A 17.266 17.266 0 0 0 66.096 29.33" fill="none" stroke="#000" stroke-width="2.8" stroke-linecap="round"/>
+        <path d="M 35.933 18.667 A 17.266 17.266 0 1 1 18.667 1.401" fill="none" stroke="#000" stroke-width="2.8" stroke-linecap="round"/>
+        <path d="M 22.9 18.666 A 17.266 17.266 0 1 1 40.166 35.932" fill="none" stroke="#000" stroke-width="2.8" stroke-linecap="round"/>
+      </svg>
+      <span class="txt">Sara Iglesias<span>Buenos Aires, Argentina</span></span>
+    </a>
+
+    <div class="header-right">
+      <details class="lang">
+        <summary>English</summary>
+        <div class="opts">
+          <a href="index.html">English</a>
+          <a href="es/index.html">Español</a>
+        </div>
+      </details>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu"><span class="bars"></span></button>
+    </div>
+  </header>
+
+  <!-- ======== OVERLAY DE MENÚ ======== -->
+  <div class="menu-scrim" id="menuScrim"></div>
+  <div class="menu-overlay" id="menuOverlay">
+    <nav>
+      <a href="#top">Home</a>
+      <a href="#services">Works</a>
+      <a href="#about">About me</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="block">
+      <h6>Contact</h6>
+      <a href="mailto:saraiglesias6@gmail.com">saraiglesias6@gmail.com</a>
+      <a href="tel:+5492915752307">+54 9 (291) 5752307</a>
+    </div>
+    <div class="block">
+      <h6>Socials</h6>
+      <a href="https://www.instagram.com/_saraiglesias/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.behance.net/_saraiglesias" target="_blank" rel="noopener">Behance</a>
+      <a href="https://www.linkedin.com/in/-sara-iglesias/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+
+  <!-- ======== HERO ======== -->
+  <section class="hero" id="top" data-greet="Hi!" data-name="I'm Sara." data-design="I design ">
+    <div class="reveal-line"><h1 class="typeline"><span id="heroLine1"></span><span class="caret" id="caret1"></span></h1></div>
+    <div class="reveal-line">
+      <h1 class="typeline"><span id="heroLine2"></span><span class="typed" id="typed"></span><span class="caret" id="caret2"></span></h1>
+    </div>
+    <div class="reveal-line">
+      <p>I design identities and everything that comes after.<br>
+      Graphic, editorial, digital, spatial and product design:<br>
+      one same criterion, across different languages.</p>
+    </div>
+  </section>
+
+  <!-- ======== SERVICIOS (filtros de los trabajos) ======== -->
+  <section class="section sub services-filter" id="services">
+    <div class="services-grid" id="serviceFilters">
+      <button class="svc-chip" type="button" data-service="visual">
+        <span class="svc-chip__head"><span class="dot" aria-hidden="true"></span><span class="svc-chip__name">Visual &amp; Graphic</span></span>
+        <span class="svc-chip__desc"><span>Editorial design, branding, visual identities, presentations and graphics for print and digital.</span></span>
+      </button>
+      <button class="svc-chip" type="button" data-service="spatial">
+        <span class="svc-chip__head"><span class="dot" aria-hidden="true"></span><span class="svc-chip__name">Spatial &amp; Exhibition</span></span>
+        <span class="svc-chip__desc"><span>Experience and exhibition design, display systems, structures and furniture for cultural spaces.</span></span>
+      </button>
+      <button class="svc-chip" type="button" data-service="product">
+        <span class="svc-chip__head"><span class="dot" aria-hidden="true"></span><span class="svc-chip__name">Product &amp; Industrial</span></span>
+        <span class="svc-chip__desc"><span>Product and furniture design, object systems and prototyping, from concept through to production.</span></span>
+      </button>
+      <button class="svc-chip" type="button" data-service="audiovisual">
+        <span class="svc-chip__head"><span class="dot" aria-hidden="true"></span><span class="svc-chip__name">Audiovisual &amp; Interactive</span></span>
+        <span class="svc-chip__desc"><span>Sound design, audiovisual content, animation, generative visuals and interactive installations.</span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ======== TRABAJOS (grilla) ======== -->
+  <section class="works" id="works">
+    <a class="work-card" href="works/54.html" data-bg="#FA0057" data-services="visual spatial audiovisual" data-dark="1">
+      <div class="frame"><img src="https://framerusercontent.com/images/Vf9PunfYOCjhPooeXJTyuXSfieA.jpg" alt="(+54)" /></div>
+      <h3>(+54)</h3>
+      <p class="cats">Visual &amp; Graphic <i>/</i> Spatial &amp; Exhibition <i>/</i> Audiovisual &amp; Interactive</p>
+    </a>
+    <a class="work-card" href="works/churba.html" data-bg="#B7CE00" data-bright="1" data-services="visual spatial">
+      <div class="frame"><img src="https://framerusercontent.com/images/eY4LY37EdcB2z1JdPeJqIEVQcTU.png" alt="Churba at the Moderno" /></div>
+      <h3>Churba at the Moderno</h3>
+      <p class="cats">Visual &amp; Graphic <i>/</i> Spatial &amp; Exhibition</p>
+    </a>
+    <a class="work-card" href="works/forja.html" data-bg="#ACABA5" data-services="visual product">
+      <div class="frame"><img src="https://framerusercontent.com/images/9kbESLGNbMliWoL4KhLMQIWA1M.jpg" alt="Forja®" /></div>
+      <h3>Forja&reg;</h3>
+      <p class="cats">Visual &amp; Graphic <i>/</i> Product &amp; Industrial</p>
+    </a>
+    <a class="work-card" href="works/cero-al-infinito.html" data-bg="#4E5612" data-services="visual spatial audiovisual product" data-dark="1">
+      <div class="frame"><img src="https://framerusercontent.com/images/MOZyp31Uoop8peq6VnGWcWrOClw.png" alt="Cero al Infinito" /></div>
+      <h3>Cero al Infinito</h3>
+      <p class="cats">Visual &amp; Graphic <i>/</i> Spatial &amp; Exhibition <i>/</i> Audiovisual &amp; Interactive <i>/</i> Product &amp; Industrial</p>
+    </a>
+    <a class="work-card" href="works/di-tella.html" data-bg="#417DFF" data-services="visual" data-dark="1">
+      <div class="frame"><img src="assets/img/ditella/home-cover.webp" alt="Gráfica en Di Tella" /></div>
+      <h3>Gráfica en Di Tella</h3>
+      <p class="cats">Visual &amp; Graphic</p>
+    </a>
+    <a class="work-card" href="works/nucleo.html" data-bg="#F0C800" data-bright="1" data-services="product">
+      <div class="frame"><img src="https://framerusercontent.com/images/zgIqb4Jg9HsqwlU9TlkvPMhrs4.png" alt="Núcleo" /></div>
+      <h3>N&uacute;cleo</h3>
+      <p class="cats">Product &amp; Industrial</p>
+    </a>
+  </section>
+
+  <!-- Pill "View" (cursor custom sobre trabajos) -->
+  <div class="view-pill" id="viewPill" aria-hidden="true">View</div>
+
+  <!-- ======== ABOUT + MODELO 3D ======== -->
+  <section class="section" id="about">
+    <div class="about-grid">
+      <div class="about-left">
+        <h2 class="io-reveal">About me</h2>
+        <a class="btn io-reveal" href="assets/docs/resume.pdf" download>Download Resume</a>
+        <div class="bio io-reveal">
+          <p>I'm a designer. I work in <strong>systems</strong>: I define the rules that hold a project together and bring them down to every piece — whether a publication, a website, an experience or an object.</p>
+          <p>My projects are varied, yet they share one logic: the criteria to handle my own or others' systems, attention to detail, and decisions made from the user — from whoever will receive the design.</p>
+          <p>I work with Adobe, Figma, Office, 3D and some code, and I bring AI into my daily workflow to quickly handle the repetitive and get to what matters sooner. I've learned to be adaptable: tools change all the time, and I know how to adapt to them.</p>
+        </div>
+      </div>
+      <div class="model-wrap io-reveal">
+        <model-viewer
+          src="https://framerusercontent.com/assets/hO8yQbpUSpw1TQ5v68keBMgbg.glb"
+          alt="3D model"
+          loading="eager" reveal="auto"
+          scale="0.742 0.742 0.742"
+          camera-controls disable-zoom disable-tap
+          interaction-prompt="none"
+          shadow-intensity="0" shadow-softness="0.8"
+          exposure="1.35"
+          camera-orbit="0deg 67deg 145%"
+          min-camera-orbit="auto auto 10%"
+          max-camera-orbit="auto auto 400%"
+          field-of-view="45deg"
+          auto-rotate auto-rotate-delay="0" rotation-per-second="30deg"
+          touch-action="none">
+        </model-viewer>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== EDUCACIÓN ======== -->
+  <section class="section split sub">
+    <h2 class="io-reveal">Education</h2>
+    <div class="rows">
+      <div class="row io-reveal">
+        <div class="role">Universidad Torcuato Di Tella</div>
+        <div class="years">2022 - 2025</div>
+        <div class="desc">Bachelor's Degree in Design &middot; Minor in Strategic Innovation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== EXPERIENCIA ======== -->
+  <section class="section split sub">
+    <h2 class="io-reveal">Experience</h2>
+    <div class="rows">
+      <div class="row io-reveal">
+        <div class="role">Assistant Professor &middot; Generative AI and Design &middot; Universidad Torcuato Di Tella</div>
+        <div class="years">2026 - Now</div>
+        <div class="desc">Theoretical and practical support in the course for final-year Design students, exploring the intersection between generative AI and design.</div>
+      </div>
+      <div class="row io-reveal">
+        <div class="role">Editorial Designer &middot; Mosaik</div>
+        <div class="years">2025 - Now</div>
+        <div class="desc">Editorial design, illustration, layout development and final print-ready file preparation for a series of illustrated books.</div>
+      </div>
+      <div class="row io-reveal">
+        <div class="role">Design Intern &middot; Admissions Office &middot; Universidad Torcuato Di Tella</div>
+        <div class="years">2024 - Now</div>
+        <div class="desc">Design of institutional presentations and graphic pieces for admissions campaigns, plus guidance and guided tours for students and families.</div>
+      </div>
+      <div class="row io-reveal">
+        <div class="role">Community Manager &middot; AP Tienda de Aromas</div>
+        <div class="years">2021 - 2022</div>
+        <div class="desc">Social media management: daily content creation, editing and publishing for Instagram and Facebook, in line with the brand's guidelines.</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ======== HERRAMIENTAS ======== -->
+  <section class="section split sub">
+    <h2 class="io-reveal">Tools</h2>
+    <div class="tools-rows">
+      <div class="trow io-reveal">
+        <div class="cat">Languages</div>
+        <ul class="items"><li>Spanish &middot; Native</li><li>English &middot; C2</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Adobe Creative Suite <span class="pro">PRO</span></div>
+        <ul class="items"><li>Illustrator</li><li>Photoshop</li><li>After Effects</li><li>InDesign</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Microsoft 365</div>
+        <ul class="items"><li>Excel</li><li>PowerPoint</li><li>Word</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Web - UX/UI <span class="pro">PRO</span></div>
+        <ul class="items"><li>Figma</li><li>Framer</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">3D</div>
+        <ul class="items"><li>Blender</li><li>Rhinoceros 3D</li><li>Grasshopper</li><li>Gravity Sketch</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Programming</div>
+        <ul class="items"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Audio</div>
+        <ul class="items"><li>Ableton Live</li><li>Reaper</li></ul>
+      </div>
+      <div class="trow io-reveal">
+        <div class="cat">Visuals</div>
+        <ul class="items"><li>TouchDesigner</li><li>Resolume Arena</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== CONTACTO ======== -->
+  <section class="section" id="contact">
+    <h2 class="io-reveal">Let's get in touch</h2>
+    <form class="contact-form io-reveal" action="https://api.web3forms.com/submit" method="POST" id="contactForm">
+      <!-- Pegá acá tu access key de web3forms.com (ver README) -->
+      <input type="hidden" name="access_key" value="TU_ACCESS_KEY_ACA" />
+      <input type="hidden" name="subject" value="Nuevo mensaje desde tu portfolio" />
+      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
+      <div class="form-row">
+        <div class="field"><input type="text" name="name" placeholder="Name" required /></div>
+        <div class="field"><input type="email" name="email" placeholder="Email" required /></div>
+      </div>
+      <div class="field"><textarea name="message" placeholder="Message" required></textarea></div>
+      <button type="submit">Submit</button>
+      <p class="form-status" id="formStatus" role="status"></p>
+    </form>
+  </section>
+
+  <!-- ======== FOOTER ======== -->
+  <footer class="site-footer">
+    <div class="footer-cols">
+      <div>
+        <h6>Menu</h6>
+        <ul>
+          <li><a href="#top">Home</a></li>
+          <li><a href="#services">Works</a></li>
+          <li><a href="#about">About me</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h6>Contact</h6>
+        <ul>
+          <li><a href="mailto:saraiglesias6@gmail.com">saraiglesias6@gmail.com</a></li>
+          <li><a href="tel:+5492915752307">+54 9 (291) 5752307</a></li>
+        </ul>
+      </div>
+      <div>
+        <h6>Socials</h6>
+        <ul>
+          <li><a href="https://www.instagram.com/_saraiglesias/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.behance.net/_saraiglesias" target="_blank" rel="noopener">Behance</a></li>
+          <li><a href="https://www.linkedin.com/in/-sara-iglesias/" target="_blank" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+      <p class="copyright">&copy;2026</p>
+    </div>
+  </footer>
+
+  <script>window.TYPE_WORDS = ["identities.", "experiences.", "solutions.", "systems."];</script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
