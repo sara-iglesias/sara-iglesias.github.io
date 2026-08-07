@@ -99,6 +99,16 @@
 /* Full-bleed dentro del contenedor */
 .media-full video, .media-full img { width: 100%; }
 
+/* Media que tiene que entrar entera en pantalla (video de apertura de Churba):
+   se limita por alto y el ancho se acomoda solo, centrado. */
+.case-media.media-fit video,
+.case-media.media-fit img {
+  max-height: 95svh;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 /* Par lado a lado */
 .media-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
@@ -561,8 +571,12 @@ body.quote-green .case-media.plan .on-green { display: block; }
 .case-3d.row model-viewer { width: 10%; aspect-ratio: 1 / 1; }
 /* Sillón: más pegado a la foto que tiene arriba */
 .case-3d.snug { padding-top: 0; margin-top: -34px; }
-/* Último 3D (alfombra verde): un poquito más arriba */
-.case-3d.raise { margin-top: -22px; }
+/* Copas: respiran más abajo antes de la foto siguiente */
+.case-3d.row { padding-bottom: 70px; }
+/* Último 3D (alfombra verde): bien pegado a la foto de arriba… */
+.case-3d.raise { margin-top: -70px; }
+/* …y a la de abajo */
+.case-3d.raise + .case-media { padding-top: 24px; }
 
 /* ---------- Churba: abanico (mismo formato que +54, Drag en negro) ---------- */
 .fan.churba .hint { color: var(--ink); }

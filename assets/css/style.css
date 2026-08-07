@@ -175,6 +175,31 @@ body.menu-open .menu-scrim { opacity: 1; pointer-events: auto; }
 }
 .menu-overlay nav a:hover { color: rgba(255, 255, 255, 0.55); }
 
+/* Lista de trabajos: sub-títulos debajo de "Works" */
+.menu-overlay nav .sub {
+  margin: 8px 0 18px 2px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.menu-overlay nav .sub a {
+  font-size: clamp(15px, 1.15vw, 18px);
+  font-weight: 400;
+  letter-spacing: var(--track-body);
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.55);
+}
+.menu-overlay nav .sub a:hover,
+.menu-overlay nav .sub a.on { color: #fff; }
+
+/* Si la lista no entra (pantallas bajas), el panel scrollea sin cortar arriba */
+.menu-overlay {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 8vh;
+  padding-bottom: 8vh;
+  justify-content: safe center;
+}
+
 .menu-overlay .block { margin-top: 7vh; }
 .menu-overlay .block h6 {
   font-size: 16px;
@@ -194,6 +219,7 @@ body.menu-open .menu-scrim { opacity: 1; pointer-events: auto; }
 
 /* ============ HERO ============ */
 .hero {
+  position: relative;             /* referencia del selector de idioma */
   min-height: 86svh;              /* deja asomar las tarjetas al cargar */
   display: flex;
   flex-direction: column;
@@ -266,6 +292,89 @@ html.home-intro.home-revealed .site-footer {
   transform: none;
   transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
 }
+/* ---------- Elección de idioma (primer paso de la intro) ----------
+   Los dos saludos uno al lado del otro, centrados, con su botón debajo.
+   Primero se tipean los saludos, después aparecen los botones. Al elegir se
+   apaga todo menos el saludo elegido, que se borra tipeado en su lugar. */
+.lang-pick[hidden] { display: none; }
+/* Va posicionado encima de la primera línea del hero (el JS le calcula el
+   `top` midiéndola), así el saludo nace exactamente de donde después nace
+   "I'm Sara.", pegado al margen izquierdo. */
+.lang-pick {
+  position: absolute;
+  left: var(--pad-x);
+  right: var(--pad-x);
+  z-index: 70;                 /* por encima de todo lo que está apagado detrás */
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;      /* una opción arriba de la otra */
+  align-items: flex-start;
+  gap: clamp(24px, 4.5vh, 58px);
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+}
+.lang-pick.in { opacity: 1; }
+
+/* Toda la opción es clickeable, no sólo la pastilla */
+.lang-pick__opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(14px, 2.2vh, 26px);
+  cursor: pointer;
+  transition: opacity 0.45s var(--ease);
+}
+/* La opción no elegida se apaga pero conserva su lugar: así la elegida no se
+   corre de donde estaba cuando se borra. */
+.lang-pick__opt.out { opacity: 0; pointer-events: none; }
+
+.lang-pick h1 {
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  line-height: 1.05;
+  white-space: nowrap;
+  min-height: 1.1em;
+}
+
+.lang-pick__btn {
+  flex: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: var(--track-body);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 999px;
+  padding: 13px 30px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: background 0.28s var(--ease), color 0.28s var(--ease),
+              border-color 0.28s var(--ease), opacity 0.4s var(--ease),
+              transform 0.4s var(--ease);
+}
+.lang-pick__btn.in { opacity: 1; transform: none; }
+.lang-pick__btn:hover {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.lang-pick__btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* Ya eligió: los botones se apagan */
+.lang-pick.chosen .lang-pick__btn { opacity: 0; transform: none; pointer-events: none; }
+
+/* Las líneas del hero siguen ocupando su lugar mientras se elige (están en
+   opacity 0): así el layout no se mueve cuando el selector se cierra. Pero,
+   como están invisibles, no deben comerse ningún clic: durante la intro lo
+   único que recibe el mouse es el selector. */
+html.home-intro:not(.home-revealed) .site-header,
+html.home-intro.picking .hero .reveal-line,
+html.home-intro.picking .section,
+html.home-intro.picking .works,
+html.home-intro.picking .site-footer { pointer-events: none; }
+
 /* Botón para saltear la animación de intro (sólo ícono) */
 .intro-skip {
   position: fixed;
@@ -347,7 +456,16 @@ body.intro-bg.on-dark .typeline .caret { background: #fff; }
 .work-card .cats { margin-top: 2px; font-size: 16px; color: var(--ink-soft); }
 .work-card .cats i { font-style: normal; padding: 0 6px; }
 
-/* Pill "View" que sigue el cursor sobre las tarjetas */
+/* Pill "View" que sigue el cursor sobre las tarjetas.
+   El scale va DENTRO del transform, después de los translate: si se usa la
+   propiedad `scale` suelta, el navegador la aplica antes que el transform y el
+   círculo crece desde el origen (esquina de la pantalla) en vez de crecer en
+   el lugar. Para poder animarlo hay que declarar --s como número. */
+@property --s {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
 .view-pill {
   position: fixed;
   top: 0; left: 0;
@@ -361,10 +479,16 @@ body.intro-bg.on-dark .typeline .caret { background: #fff; }
   color: #111;
   pointer-events: none;
   z-index: 60;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.3s var(--ease);
+  /* La posición la mueve el JS con --x/--y (transform, no left/top: no hay
+     recálculo de layout en cada cuadro → seguimiento parejo). El scale entra
+     y sale con transición, pero el desplazamiento no transiciona nunca. */
+  --x: 50vw; --y: 50vh;
+  transform: translate3d(var(--x), var(--y), 0) translate(-50%, -50%) scale(var(--s));
+  opacity: 0;
+  transition: opacity 0.22s var(--ease), --s 0.3s var(--ease);
+  will-change: transform;
 }
-.view-pill.is-on { transform: translate(-50%, -50%) scale(1); }
+.view-pill.is-on { --s: 1; opacity: 1; }
 
 /* ============ SECCIONES ============ */
 .section { padding: 12vh var(--pad-x); }
@@ -691,14 +815,35 @@ body.works-dark .svc-chip.active .dot::after { border-color: var(--ink); }
 .site-header .menu-btn:hover { opacity: 1; }
 
 /* ---------- Grain natural en movimiento (todo el sitio) ----------
-   La capa la inyecta main.js: un SVG con feTurbulence cuya "semilla" se
-   anima, así el ruido se REGENERA en cada cuadro (no se traslada en bloque).
-   Es liviano: el filtro corre sobre un mosaico chico que se tilea. */
+   El ruido es un mosaico de 160×160 generado con feTurbulence que el navegador
+   rasteriza una sola vez y después repite: cuesta lo mismo que una imagen.
+   El "hervor" del grano se logra desplazando la capa a saltos (transform, pura
+   GPU). La capa es más grande que la pantalla para que al moverse no se vea
+   el borde. */
 .grain-layer {
   position: fixed;
-  inset: 0;
+  top: -50px; left: -50px;
+  width: calc(100% + 100px);
+  height: calc(100% + 100px);
   z-index: 9998;
   pointer-events: none;
   opacity: 0.5;
+  background-repeat: repeat;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -0.5'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.6s steps(1, end) infinite;
+  will-change: transform;
+}
+@keyframes grain-shift {
+  0%    { transform: translate3d(0, 0, 0); }
+  12.5% { transform: translate3d(-13px, 9px, 0); }
+  25%   { transform: translate3d(7px, -17px, 0); }
+  37.5% { transform: translate3d(-21px, -6px, 0); }
+  50%   { transform: translate3d(15px, 11px, 0); }
+  62.5% { transform: translate3d(-5px, 19px, 0); }
+  75%   { transform: translate3d(19px, -12px, 0); }
+  87.5% { transform: translate3d(-9px, 3px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grain-layer { animation: none; }
 }
 

@@ -5,30 +5,32 @@
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- Grain natural (todo el sitio) ----------
-   feTurbulence con la "semilla" animada: el ruido se regenera en cada
-   cuadro (parpadea en el lugar, no se desplaza en bloque). El filtro corre
-   sobre un mosaico chico que se tilea → liviano. */
+   El ruido es una textura fija (un mosaico de feTurbulence que el navegador
+   rasteriza UNA vez y luego tilea, ver .grain-layer en style.css). El
+   movimiento lo hace el CSS desplazando la capa a saltos, que es trabajo de
+   GPU y no cuesta nada. Antes el filtro SVG se recalculaba en cada cuadro
+   sobre toda la pantalla: eso era lo que trababa la página al llegar al 3D. */
 (function () {
   if (document.querySelector('.grain-layer')) return;
   const layer = document.createElement('div');
   layer.className = 'grain-layer';
   layer.setAttribute('aria-hidden', 'true');
-  const anim = reduceMotion ? '' :
-    '<animate attributeName="seed" values="2;9;4;13;6;11;3;15" dur="0.55s" calcMode="discrete" repeatCount="indefinite"/>';
-  layer.innerHTML =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none">' +
-      '<defs>' +
-        '<filter id="grainF" x="0" y="0" width="100%" height="100%">' +
-          '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" seed="2">' + anim + '</feTurbulence>' +
-          '<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -0.5"/>' +
-        '</filter>' +
-        '<pattern id="grainP" width="160" height="160" patternUnits="userSpaceOnUse">' +
-          '<rect width="160" height="160" filter="url(#grainF)"/>' +
-        '</pattern>' +
-      '</defs>' +
-      '<rect width="100%" height="100%" fill="url(#grainP)"/>' +
-    '</svg>';
   (document.body || document.documentElement).appendChild(layer);
+})();
+
+/* ---------- 3D: girar sólo mientras se ve en pantalla ----------
+   Un <model-viewer> con auto-rotate repinta en cada cuadro aunque esté fuera
+   de vista. Lo frenamos cuando no se ve. */
+(function () {
+  const views = [...document.querySelectorAll('model-viewer[auto-rotate]')];
+  if (!views.length || !('IntersectionObserver' in window)) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) e.target.setAttribute('auto-rotate', '');
+      else e.target.removeAttribute('auto-rotate');
+    });
+  }, { rootMargin: '150px' });
+  views.forEach((v) => obs.observe(v));
 })();
 
 /* ---------- 1. Intro + typewriter del hero (solo home) ----------
@@ -47,6 +49,7 @@ if (typedEl && window.TYPE_WORDS) {
   const nameTxt = (hero && hero.dataset.name) || "I'm Sara.";
   const design = (hero && hero.dataset.design) || 'I design ';
 
+  const pickEl = document.getElementById('langPick');
   const skipBtn = document.getElementById('introSkip');
   let skipped = false, wake = null;
   function finishIntro() {
@@ -100,6 +103,117 @@ if (typedEl && window.TYPE_WORDS) {
     while (t.length) { t = t.slice(0, -1); el.textContent = t; await sleep(cps); }
   }
 
+  /* --- Elección de idioma -------------------------------------------------
+     Los dos saludos se tipean a la vez, después aparecen los botones. Al
+     elegir, se apaga todo menos el saludo elegido, que se borra tipeado ahí
+     mismo. Recién después aparece "I'm Sara." en el lugar de siempre.
+     Estas esperas son propias (no las salteables): el botón de saltear todavía
+     no está en pantalla y typeStr/eraseAll comparten un único `wake`. */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function typeInto(el, str, cps) {
+    for (let i = 1; i <= str.length; i++) { el.textContent = str.slice(0, i); await wait(cps); }
+  }
+  async function eraseInto(el, cps) {
+    let t = el.textContent;
+    while (t.length) { t = t.slice(0, -1); el.textContent = t; await wait(cps); }
+  }
+
+  const optOf = (lang) => [...pickEl.querySelectorAll('.lang-pick__opt')]
+    .find((o) => o.querySelector('.lang-pick__btn').dataset.lang === lang);
+
+  /* El selector se apoya justo sobre la primera línea del hero: medimos dónde
+     está esa línea (que sigue en su lugar, invisible) y ahí lo plantamos. Así
+     el saludo sale exactamente de donde después sale "I'm Sara.". */
+  function placePicker() {
+    pickEl.style.top = (lines[0].offsetTop) + 'px';
+  }
+  function openPicker() {
+    docEl.classList.add('picking');
+    pickEl.hidden = false;
+    placePicker();
+    window.addEventListener('resize', placePicker);
+  }
+  async function closePicker() {
+    pickEl.classList.remove('in');
+    await wait(320);
+    window.removeEventListener('resize', placePicker);
+    pickEl.hidden = true;
+    docEl.classList.remove('picking');
+  }
+
+  /* Devuelve true si la intro sigue en esta página, false si navega a la otra. */
+  async function chooseLanguage() {
+    clearTimeout(window.__introSafety);     // no revelamos la página mientras decide
+    openPicker();
+    const opts = [...pickEl.querySelectorAll('.lang-pick__opt')];
+    await wait(60);
+    pickEl.classList.add('in');
+    await wait(420);
+
+    // Los dos saludos se escriben al mismo tiempo
+    await Promise.all(opts.map((o) => typeInto(o.querySelector('.g'), o.dataset.text, 115)));
+    await wait(260);
+    // …y recién ahí asoman los botones
+    opts.forEach((o, i) => setTimeout(() => o.querySelector('.lang-pick__btn').classList.add('in'), i * 130));
+
+    const btn = await new Promise((resolve) => {
+      // El clic se escucha en TODA la opción (saludo + pastilla): si algo
+      // llegara a taparle la pastilla, tocar el saludo también sirve.
+      opts.forEach((o) => {
+        o.addEventListener('click', function () {
+          if (!pickEl.classList.contains('chosen')) resolve(o.querySelector('.lang-pick__btn'));
+        });
+      });
+      // Si nadie elige, después de un rato seguimos con el idioma de esta página
+      setTimeout(() => resolve(optOf(docEl.lang).querySelector('.lang-pick__btn')), 45000);
+    });
+
+    pickEl.classList.add('chosen');                       // se apagan los botones
+    const mine = btn.closest('.lang-pick__opt');
+    opts.forEach((o) => { if (o !== mine) o.classList.add('out'); });
+    await wait(480);                                      // se va lo no elegido
+
+    if (btn.dataset.lang !== docEl.lang) {
+      // Es la otra versión del sitio: anotamos la elección (y desarmamos
+      // introSeen) para que allá la intro siga sin volver a preguntar.
+      try {
+        sessionStorage.setItem('introPick', btn.dataset.lang);
+        sessionStorage.removeItem('introSeen');
+      } catch (e) {}
+      location.href = btn.dataset.href;
+      return false;
+    }
+
+    // Se queda acá: rearmamos la red de seguridad, borramos el saludo y cerramos
+    window.__introSafety = setTimeout(function () {
+      docEl.classList.remove('home-intro');
+    }, 20000);
+    await eraseInto(mine.querySelector('.g'), 60);
+    await wait(160);
+    await closePicker();
+    return true;
+  }
+
+  /* Llegó desde la otra versión: el saludo ya está elegido, así que aparece
+     escrito en el mismo lugar donde estaba y se borra igual que en el otro
+     camino. Las columnas están en el mismo orden en las dos páginas, o sea
+     que el salto entre una y otra no se nota. */
+  async function replayGreeting() {
+    openPicker();
+    pickEl.classList.add('chosen');
+    const opts = [...pickEl.querySelectorAll('.lang-pick__opt')];
+    const mine = optOf(docEl.lang) || opts[0];
+    opts.forEach((o) => { if (o !== mine) o.classList.add('out'); });
+    const g = mine.querySelector('.g');
+    g.textContent = mine.dataset.text;
+    await wait(60);
+    pickEl.classList.add('in');
+    await wait(680);
+    await eraseInto(g, 60);
+    await wait(160);
+    await closePicker();
+  }
+
   // La intro corre sólo si está armada (primera carga del home en la sesión)
   // y no hay reduce-motion. Al navegar dentro del sitio ya no se repite.
   const introActive = docEl.classList.contains('home-intro') && !reduceMotion && l1 && l2;
@@ -117,15 +231,32 @@ if (typedEl && window.TYPE_WORDS) {
     setTimeout(step, 600);
   } else {
     if (c1) c1.style.display = 'none';           // arranca en blanco, sin cursor
-    if (skipBtn) skipBtn.classList.add('show');  // botón para saltear la intro
     (async function () {
+      // --- Paso 0: elegir idioma ------------------------------------------
+      // Si el usuario ya eligió (viene de la otra versión del sitio), el
+      // saludo aparece escrito y seguimos.
+      let already = null;
+      try { already = sessionStorage.getItem('introPick'); } catch (e) {}
+      try { sessionStorage.removeItem('introPick'); } catch (e) {}
+
+      if (pickEl && !already) {
+        if (!(await chooseLanguage())) return;    // eligió el otro idioma: navega
+      } else if (pickEl && already) {
+        await replayGreeting();
+      } else {
+        lines[0].classList.add('on');
+        await sleep(500);                         // página en blanco un instante
+        if (c1) c1.style.display = '';
+        await sleep(150);
+        await typeStr(l1, greet, 120);
+        await sleep(280);
+        await eraseAll(l1, 55);
+      }
+
+      // A partir de acá el saludo ya no está: entra la línea 1 del hero
       lines[0].classList.add('on');
-      await sleep(500);                          // página en blanco un instante
-      if (c1) c1.style.display = '';             // aparece el cursor
-      await sleep(150);
-      await typeStr(l1, greet, 120);             // "Hi!"
-      await sleep(280);
-      await eraseAll(l1, 55);                    // se borra (más rápido)
+      if (c1) c1.style.display = '';
+      if (skipBtn) skipBtn.classList.add('show'); // botón para saltear la intro
       await sleep(140);
       await typeStr(l1, nameTxt, 110);           // "I'm Sara."
       await sleep(350);                          // respiro corto antes de "I design"
@@ -176,6 +307,8 @@ if (typedEl && window.TYPE_WORDS) {
       await new Promise((r) => setTimeout(r, skipped ? 950 : 0));
       step();
     })().catch(function () {
+      if (pickEl) pickEl.hidden = true;
+      docEl.classList.remove('picking');
       document.body.classList.remove('intro-bg', 'on-dark');
       document.body.style.backgroundColor = '';
       l1.textContent = nameTxt; l2.textContent = design;
@@ -210,23 +343,29 @@ if (typedEl && window.TYPE_WORDS) {
   };
   // Elementos "hovereables" que muestran la manito
   const HOVER = ['a', 'button', 'summary', 'label[for]', '[role="button"]',
-    '.svc-chip', '.menu-btn', '.intro-skip', '.lang summary',
+    '.svc-chip', '.menu-btn', '.intro-skip', '.lang summary', '.lang-pick__opt',
     '.pal-chip', '.dt-piece', '.fan .card', '.cf-web',
     '.car-btn', '.lt-arrow', '.pj-arrow', '.st-arrow', '.b-arrow', '.zone',
     '.asm-col', '.hotspot', '.lamp-switch', '.ig-actions svg',
     '.big-quote [data-quote]', '.daynight', 'model-viewer'];
+  // Cada selector hovereable se expande a "S, S *": si no, al pasar el mouse
+  // por un hijo (el ícono dentro del botón, el span dentro del chip) ganaba la
+  // regla general de la flecha y el cursor parpadeaba entre flecha y manito.
+  const expand = (prefix) =>
+    HOVER.map((s) => prefix + s + ',' + prefix + s + ' *').join(',');
+
   const col = b.getAttribute('data-cursor');
   const st = document.createElement('style');
   if (col) {
     // Dentro de un trabajo: flecha (y manito) rellenas del color del trabajo
     const arrow = mkArrow(col), hand = mkHand(col);
     st.textContent = 'body.case, body.case *{cursor:' + arrow + ' !important;}' +
-      HOVER.map(s => 'body.case ' + s).join(',') + '{cursor:' + hand + ' !important;}';
+      expand('body.case ') + '{cursor:' + hand + ' !important;}';
   } else if (!b.classList.contains('case')) {
     // Homepage: flecha y manito negras; sobre las work-cards se mantiene el View
     const arrow = mkArrow('#111'), hand = mkHand('#111');
     st.textContent = 'body, body *{cursor:' + arrow + ' !important;}' +
-      HOVER.map(s => 'body ' + s).join(',') + '{cursor:' + hand + ' !important;}' +
+      expand('body ') + '{cursor:' + hand + ' !important;}' +
       ' .work-card, .work-card *{cursor:none !important;}';
   }
   document.head.appendChild(st);
@@ -246,16 +385,27 @@ document.querySelectorAll('.io-reveal').forEach((el) => io.observe(el));
 /* ---------- 3. Pill "View" que sigue el cursor ---------- */
 const pill = document.getElementById('viewPill');
 if (pill && !reduceMotion) {
-  let tx = 0, ty = 0, cx = 0, cy = 0;
+  // tx/ty = posición real del mouse · cx/cy = posición del pill (persigue con lerp)
+  let tx = 0, ty = 0, cx = 0, cy = 0, seen = false;
 
   let raf = null, active = 0;
-  window.addEventListener('mousemove', (ev) => { tx = ev.clientX; ty = ev.clientY; }, { passive: true });
+  window.addEventListener('mousemove', (ev) => {
+    tx = ev.clientX; ty = ev.clientY;
+    // Antes del primer movimiento el pill no tiene posición: lo dejamos justo
+    // debajo del mouse para que no aparezca volando desde la esquina.
+    if (!seen) { seen = true; cx = tx; cy = ty; paint(); }
+  }, { passive: true });
+
+  function paint() {
+    // transform en vez de left/top: no dispara layout en cada cuadro
+    pill.style.setProperty('--x', cx + 'px');
+    pill.style.setProperty('--y', cy + 'px');
+  }
 
   function tick() {
-    cx += (tx - cx) * 0.18;   // lerp: el pill persigue al mouse con suavidad
-    cy += (ty - cy) * 0.18;
-    pill.style.left = cx + 'px';
-    pill.style.top = cy + 'px';
+    cx += (tx - cx) * 0.24;   // lerp: el pill persigue al mouse con suavidad
+    cy += (ty - cy) * 0.24;
+    paint();
     // El loop sólo corre mientras el mouse está sobre un trabajo (o terminando de acomodarse)
     if (active > 0 || Math.abs(tx - cx) > 0.4 || Math.abs(ty - cy) > 0.4) {
       raf = requestAnimationFrame(tick);
@@ -263,7 +413,12 @@ if (pill && !reduceMotion) {
   }
 
   document.querySelectorAll('.work-card').forEach((card) => {
-    card.addEventListener('mouseenter', () => {
+    card.addEventListener('mouseenter', (ev) => {
+      // Al entrar, el pill nace exactamente donde está el mouse (sin viaje raro
+      // desde la última posición ni desde 0,0) y recién ahí empieza a seguirlo.
+      tx = ev.clientX; ty = ev.clientY;
+      cx = tx; cy = ty; seen = true;
+      paint();
       active++; pill.classList.add('is-on');
       // El pill se rellena con el color del trabajo (con algo de transparencia)
       const bg = card.dataset.bg;

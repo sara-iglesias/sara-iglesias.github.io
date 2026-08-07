@@ -163,6 +163,66 @@ function dtCarousel(root, trackSel, prevSel, nextSel, opts) {
   sync();
 })();
 
+/* Saltos a las piezas de la portada ---------------------------------------
+   El ancla nativa caía torcida por dos motivos: cada destino arranca con un
+   padding grande (el ancla apuntaba al borde de la caja, no a lo que se ve) y
+   las imágenes de más abajo todavía no habían cargado, así que el largo de la
+   página cambiaba en pleno viaje. Acá calculamos el destino a mano, forzamos
+   la carga previa y corregimos al final del scroll. */
+(function () {
+  const links = [...document.querySelectorAll('.dt-piece[href^="#"]')];
+  if (!links.length) return;
+
+  const GAP = 110;   // aire entre el borde de arriba y la pieza (tapa la cabecera)
+
+  function targetTop(el) {
+    const pad = parseFloat(getComputedStyle(el).paddingTop) || 0;
+    const y = window.scrollY + el.getBoundingClientRect().top + pad - GAP;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return Math.max(0, Math.min(y, max));
+  }
+
+  // Nada de sorpresas de altura a mitad del scroll: revelamos todo y cargamos
+  // las imágenes diferidas antes de movernos.
+  let settled = false;
+  function settle() {
+    if (settled) return;
+    settled = true;
+    document.querySelectorAll('.io-reveal').forEach((n) => n.classList.add('is-in'));
+    document.querySelectorAll('img[loading="lazy"]').forEach((im) => { im.loading = 'eager'; });
+  }
+
+  function goTo(el) {
+    settle();
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: targetTop(el), behavior: 'smooth' });
+      // Cuando el scroll se frena, si quedó corrido (porque terminó de cargar
+      // una imagen en el camino) lo acomodamos sin animación.
+      let t = null;
+      const onScroll = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          window.removeEventListener('scroll', onScroll);
+          const d = targetTop(el) - window.scrollY;
+          if (Math.abs(d) > 6) window.scrollTo({ top: targetTop(el) });
+        }, 160);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    });
+  }
+
+  links.forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (!el) return;
+      e.preventDefault();
+      goTo(el);
+      history.replaceState(null, '', a.getAttribute('href'));
+    });
+  });
+})();
+
 /* Abanico de folletos arrastrable (misma mecánica que +54) */
 (function () {
   const fan = document.getElementById('folletoFan');

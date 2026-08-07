@@ -52,6 +52,14 @@
     <nav>
       <a href="#top">Inicio</a>
       <a href="#services">Trabajos</a>
+      <div class="sub">
+        <a href="works/54.html">(+54)</a>
+        <a href="works/churba.html">Churba en el Moderno</a>
+        <a href="works/forja.html">Forja&reg;</a>
+        <a href="works/cero-al-infinito.html">Cero al Infinito</a>
+        <a href="works/di-tella.html">Gráfica en Di Tella</a>
+        <a href="works/nucleo.html">Núcleo</a>
+      </div>
       <a href="#about">Sobre mí</a>
       <a href="#contact">Contacto</a>
     </nav>
@@ -70,6 +78,22 @@
 
   <!-- ======== HERO ======== -->
   <section class="hero" id="top" data-greet="¡Hola!" data-name="Soy Sara." data-design="Diseño ">
+
+    <!-- Elección de idioma: primer paso de la intro. Lo muestra el JS y sólo
+         aparece en la primera carga de la sesión. El orden de las columnas es
+         el mismo en las dos versiones para que, al cruzar de idioma, el saludo
+         quede exactamente en el mismo lugar. -->
+    <div class="lang-pick" id="langPick" hidden>
+      <div class="lang-pick__opt" data-text="Hi!">
+        <h1 class="typeline"><span class="g"></span><span class="caret"></span></h1>
+        <button class="lang-pick__btn" type="button" data-lang="en" data-href="../index.html">English</button>
+      </div>
+      <div class="lang-pick__opt" data-text="&iexcl;Hola!">
+        <h1 class="typeline"><span class="g"></span><span class="caret"></span></h1>
+        <button class="lang-pick__btn" type="button" data-lang="es" data-href="index.html">Espa&ntilde;ol</button>
+      </div>
+    </div>
+
     <div class="reveal-line"><h1 class="typeline"><span id="heroLine1"></span><span class="caret" id="caret1"></span></h1></div>
     <div class="reveal-line">
       <h1 class="typeline"><span id="heroLine2"></span><span class="typed" id="typed"></span><span class="caret" id="caret2"></span></h1>
@@ -144,7 +168,7 @@
     <div class="about-grid">
       <div class="about-left">
         <h2 class="io-reveal">Sobre mí</h2>
-        <a class="btn io-reveal" href="../assets/docs/resume-es.pdf" download>Descargar CV</a>
+        <a class="btn io-reveal" href="../assets/docs/CV_Iglesias-Sara_Espanol.pdf" target="_blank" rel="noopener">Descargar CV</a>
         <div class="bio io-reveal">
           <p>Soy diseñadora. Trabajo en <strong>sistemas</strong>: defino las reglas que sostienen un proyecto y las bajo a cada pieza, sea una publicación, una web, una experiencia o un objeto.</p>
           <p>Mis proyectos son variados, aunque comparten una lógica: criterio para manejar sistemas propios o ajenos, atención al detalle y decisiones tomadas desde el usuario, desde quien va a recibir el diseño.</p>
@@ -155,7 +179,7 @@
         <model-viewer
           src="https://framerusercontent.com/assets/hO8yQbpUSpw1TQ5v68keBMgbg.glb"
           alt="Modelo 3D"
-          loading="eager" reveal="auto"
+          loading="lazy" reveal="auto"
           scale="0.742 0.742 0.742"
           camera-controls disable-zoom disable-tap
           interaction-prompt="none"
