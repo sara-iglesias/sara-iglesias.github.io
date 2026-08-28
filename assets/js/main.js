@@ -619,7 +619,7 @@ if (form && status) {
   const previewImg = preview ? preview.querySelector('img') : null;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const R = 17, G = 0.55, REBOTE = 0.42, FRICCION = 0.86;
+  const R = 22, G = 0.12, REBOTE = 0.32, FRICCION = 0.9, VMAX = 5.5;
   let W = 0, H = 0;
   function medir() {
     const r = pit.getBoundingClientRect();
@@ -643,6 +643,9 @@ if (form && status) {
   function paso() {
     for (const c of cuerpos) {
       c.vy += G;
+      // tope de velocidad: ningún empujón (scroll u otro) puede dispararlas
+      if (c.vy > VMAX) c.vy = VMAX; else if (c.vy < -VMAX) c.vy = -VMAX;
+      if (c.vx > VMAX) c.vx = VMAX; else if (c.vx < -VMAX) c.vx = -VMAX;
       c.x += c.vx;
       c.y += c.vy;
       if (c.x - R < 0) { c.x = R; c.vx *= -REBOTE; }
@@ -697,10 +700,11 @@ if (form && status) {
       const delta = window.scrollY - ultimoScrollY;
       ultimoScrollY = window.scrollY;
       if (!delta) return;
-      const empuje = Math.max(-14, Math.min(14, delta * 0.35));
+      // empujón mucho más sutil: apenas una cosquilla, no un golpe
+      const empuje = Math.max(-3, Math.min(3, delta * 0.06));
       cuerpos.forEach((c) => {
-        c.vy -= empuje * (0.6 + Math.random() * 0.6);
-        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.5;
+        c.vy -= empuje * (0.4 + Math.random() * 0.3);
+        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.3;
       });
     }, { passive: true });
   }
