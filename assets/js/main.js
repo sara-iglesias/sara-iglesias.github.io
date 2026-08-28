@@ -619,7 +619,9 @@ if (form && status) {
   const previewImg = preview ? preview.querySelector('img') : null;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const R = 22, G = 0.12, REBOTE = 0.32, FRICCION = 0.9, VMAX = 5.5;
+  const R = 26, G = 0.38, REBOTE = 0.2, FRICCION = 0.8;
+  // el tope de subida es mucho más chico que el de caída: pesan, no flotan
+  const VMAX_ABAJO = 9, VMAX_ARRIBA = 1.6, VMAX_X = 4;
   let W = 0, H = 0;
   function medir() {
     const r = pit.getBoundingClientRect();
@@ -638,14 +640,15 @@ if (form && status) {
     y: -30 - i * 38,               // arrancan arriba de la pileta: caen al cargar
     vx: (Math.random() - 0.5) * 2.4,
     vy: 0,
+    entro: false,                  // true recién cuando toca el piso por primera vez
   }));
 
   function paso() {
     for (const c of cuerpos) {
       c.vy += G;
-      // tope de velocidad: ningún empujón (scroll u otro) puede dispararlas
-      if (c.vy > VMAX) c.vy = VMAX; else if (c.vy < -VMAX) c.vy = -VMAX;
-      if (c.vx > VMAX) c.vx = VMAX; else if (c.vx < -VMAX) c.vx = -VMAX;
+      // tope de velocidad asimétrico: caen con ganas, casi no suben
+      if (c.vy > VMAX_ABAJO) c.vy = VMAX_ABAJO; else if (c.vy < -VMAX_ARRIBA) c.vy = -VMAX_ARRIBA;
+      if (c.vx > VMAX_X) c.vx = VMAX_X; else if (c.vx < -VMAX_X) c.vx = -VMAX_X;
       c.x += c.vx;
       c.y += c.vy;
       if (c.x - R < 0) { c.x = R; c.vx *= -REBOTE; }
@@ -655,6 +658,14 @@ if (form && status) {
         c.vy *= -REBOTE;
         c.vx *= FRICCION;
         if (Math.abs(c.vy) < 0.4) c.vy = 0;
+        c.entro = true;
+      }
+      // techo de la pileta: una vez asentada, no puede volver a salirse por
+      // arriba y superponerse con lo que hay más arriba (ej: la caja de
+      // contacto) — choca contra ese borde en lugar de pasarle por encima.
+      if (c.entro && c.y - R < 0) {
+        c.y = R;
+        c.vy *= -REBOTE;
       }
     }
     // colisiones entre bolitas: separar por superposición y repartir la velocidad
@@ -701,10 +712,11 @@ if (form && status) {
       ultimoScrollY = window.scrollY;
       if (!delta) return;
       // empujón mucho más sutil: apenas una cosquilla, no un golpe
-      const empuje = Math.max(-3, Math.min(3, delta * 0.06));
+      // empujón mínimo: apenas las hace temblar, no las levanta
+      const empuje = Math.max(-0.8, Math.min(0.8, delta * 0.012));
       cuerpos.forEach((c) => {
-        c.vy -= empuje * (0.4 + Math.random() * 0.3);
-        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.3;
+        c.vy -= empuje * (0.25 + Math.random() * 0.15);
+        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.2;
       });
     }, { passive: true });
   }
