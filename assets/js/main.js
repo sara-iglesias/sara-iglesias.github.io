@@ -366,7 +366,7 @@ if (typedEl && window.TYPE_WORDS) {
     const arrow = mkArrow('#111'), hand = mkHand('#111');
     st.textContent = 'body, body *{cursor:' + arrow + ' !important;}' +
       expand('body ') + '{cursor:' + hand + ' !important;}' +
-      ' .work-card, .work-card *{cursor:none !important;}';
+      ' .work-card, .work-card *, .ball, .ball *{cursor:none !important;}';
   }
   document.head.appendChild(st);
 })();
@@ -588,4 +588,148 @@ if (form && status) {
       apply();
     });
   });
+})();
+
+/* ---------- Volver arriba ----------
+   Aparece en cuanto se scrollea un poco, en cualquier página, para poder subir
+   desde cualquier punto sin tener que cruzar los elementos interactivos de arriba. */
+(function () {
+  const btn = document.getElementById('backToTop');
+  if (!btn) return;
+  const UMBRAL = 400;
+  const onScroll = () => { btn.classList.toggle('show', window.scrollY > UMBRAL); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+
+/* ---------- Pileta de bolitas del footer ----------
+   Una bolita por trabajo, con el color de ese trabajo. Gravedad simple, chocan
+   entre sí y contra los bordes de la pileta, y cada scroll les da un empujón —
+   como si el movimiento de la página las sacudiera. Al pasar el mouse por una:
+   aparece "View"/"Ver" en la bolita y la portada del trabajo lo sigue de cerca. */
+(function () {
+  const pit = document.getElementById('ballPit');
+  const balls = pit ? [...pit.querySelectorAll('.ball')] : [];
+  if (!pit || !balls.length) return;
+  const preview = document.getElementById('ballPreview');
+  const previewImg = preview ? preview.querySelector('img') : null;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const R = 17, G = 0.55, REBOTE = 0.42, FRICCION = 0.86;
+  let W = 0, H = 0;
+  function medir() {
+    const r = pit.getBoundingClientRect();
+    W = r.width; H = r.height;
+  }
+  medir();
+  window.addEventListener('resize', medir);
+
+  const cuerpos = balls.map((el, i) => ({
+    el,
+    x: Math.min(Math.max((W || 300) * ((i + 1) / (balls.length + 1)), R), (W || 300) - R),
+    y: -30 - i * 38,               // arrancan arriba de la pileta: caen al cargar
+    vx: (Math.random() - 0.5) * 2.4,
+    vy: 0,
+  }));
+
+  function paso() {
+    for (const c of cuerpos) {
+      c.vy += G;
+      c.x += c.vx;
+      c.y += c.vy;
+      if (c.x - R < 0) { c.x = R; c.vx *= -REBOTE; }
+      if (c.x + R > W) { c.x = W - R; c.vx *= -REBOTE; }
+      if (c.y + R > H) {
+        c.y = H - R;
+        c.vy *= -REBOTE;
+        c.vx *= FRICCION;
+        if (Math.abs(c.vy) < 0.4) c.vy = 0;
+      }
+    }
+    // colisiones entre bolitas: separar por superposición y repartir la velocidad
+    for (let pasada = 0; pasada < 2; pasada++) {
+      for (let i = 0; i < cuerpos.length; i++) {
+        for (let j = i + 1; j < cuerpos.length; j++) {
+          const a = cuerpos[i], b = cuerpos[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 0.001;
+          const min = R * 2;
+          if (dist < min) {
+            const superpos = (min - dist) / 2;
+            const nx = dx / dist, ny = dy / dist;
+            a.x -= nx * superpos; a.y -= ny * superpos;
+            b.x += nx * superpos; b.y += ny * superpos;
+            const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+            if (rel < 0) {
+              const imp = -rel * 0.5;
+              a.vx -= imp * nx; a.vy -= imp * ny;
+              b.vx += imp * nx; b.vy += imp * ny;
+            }
+          }
+        }
+      }
+    }
+    for (const c of cuerpos) {
+      c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
+    }
+  }
+
+  if (reduceMotion) {
+    // sin movimiento: quedan asentadas prolijas sobre la línea, sin caer ni temblar
+    const paso2 = Math.max(1, W - 2 * R) / Math.max(1, cuerpos.length - 1);
+    cuerpos.forEach((c, i) => {
+      c.x = R + i * paso2;
+      c.y = H - R;
+      c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
+    });
+  } else {
+    (function tick() { paso(); requestAnimationFrame(tick); })();
+    let ultimoScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const delta = window.scrollY - ultimoScrollY;
+      ultimoScrollY = window.scrollY;
+      if (!delta) return;
+      const empuje = Math.max(-14, Math.min(14, delta * 0.35));
+      cuerpos.forEach((c) => {
+        c.vy -= empuje * (0.6 + Math.random() * 0.6);
+        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.5;
+      });
+    }, { passive: true });
+  }
+
+  // ---- hover: "View"/"Ver" en la bolita + portada siguiendo al mouse ----
+  if (preview && previewImg) {
+    let tx = 0, ty = 0, px = 0, py = 0, seguido = false, rafPrev = null;
+    function pintarPreview() {
+      preview.style.setProperty('--x', px + 'px');
+      preview.style.setProperty('--y', py + 'px');
+    }
+    function tickPreview() {
+      px += (tx - px) * 0.3;
+      py += (ty - py) * 0.3;
+      pintarPreview();
+      if (Math.abs(tx - px) > 0.4 || Math.abs(ty - py) > 0.4) {
+        rafPrev = requestAnimationFrame(tickPreview);
+      } else { rafPrev = null; }
+    }
+    window.addEventListener('mousemove', (ev) => {
+      tx = ev.clientX; ty = ev.clientY;
+      if (!seguido) { seguido = true; px = tx; py = ty; pintarPreview(); }
+      if (!rafPrev) rafPrev = requestAnimationFrame(tickPreview);
+    }, { passive: true });
+
+    balls.forEach((b) => {
+      b.addEventListener('mouseenter', () => {
+        previewImg.src = b.dataset.cover;
+        previewImg.alt = b.dataset.title || '';
+        preview.classList.add('is-on');
+      });
+      b.addEventListener('mouseleave', () => {
+        preview.classList.remove('is-on');
+      });
+    });
+  }
 })();

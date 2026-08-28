@@ -28,15 +28,15 @@
   left: 57%;                     /* queda por encima de la columna Services */
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   background: #DFF135;
   color: #FA0057;
   font-family: var(--font);
   font-weight: 600;
   letter-spacing: var(--track-body);
   line-height: 1.05;
-  padding: 16px 24px 18px;
-  border-radius: 7px;
+  padding: 20px 30px 22px;
+  border-radius: 8px;
   transform: rotate(-9deg);
   box-shadow: 2px 3px 12px rgba(0, 0, 0, 0.09);
   pointer-events: none;
@@ -51,7 +51,7 @@
   border-radius: 4px;
   pointer-events: none;
 }
-.case-hero .sticker span { font-size: clamp(28px, 3.1vw, 46px); }
+.case-hero .sticker span { font-size: clamp(16px, 1.9vw, 26px); text-transform: uppercase; }
 @keyframes sticker-in {
   from { opacity: 0; transform: translateY(-22px) rotate(-9deg) scale(0.85); }
   to   { opacity: 1; transform: rotate(-9deg); }

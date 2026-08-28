@@ -1,0 +1,194 @@
+/* ============================================================
+   escena.css — la escena 3D del living
+   Todo lo nuevo vive acá. style.css queda intacto salvo el <link>.
+   ============================================================ */
+
+/* La escena vive en su propia pantalla, justo debajo de "About me".
+   El hero volvió a su alto original: ya no comparte pantalla con nada. */
+
+/* About quedó sólo con el título y el botón: el gap de 9vh pensado para la bio dejaba
+   un hueco enorme entre los dos. */
+#about .about-left { gap: 3.5vh; }
+#about .about-grid { grid-template-columns: 1fr; }
+
+/* ---- La escena ---- */
+.escena-seccion {
+  position: relative;
+  /* Más baja que la pantalla a propósito: la escena es ancha y baja, y en un cuadro alto
+     el encuadre la ajusta por el ancho y sobra blanco arriba y abajo. */
+  /* Alta como la pantalla: al hacer zoom sobre un objeto necesita aire vertical, si no
+     el encuadre recorta arriba y abajo. */
+  height: 92svh;
+  padding: 0 var(--pad-x);
+  margin-bottom: 6vh;         /* aire antes de lo que siga */
+  display: flex;              /* para que el lienzo estire de verdad: con height:100%
+                                 no alcanza, el alto de un flex item no es "definido" */
+}
+
+.escena-lienzo {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 300px;
+  /* SIN fondo propio: el canvas es transparente y deja ver el de la página. Con un blanco
+     acá, al pasar el mouse por los trabajos la página cambiaba de color y la escena
+     quedaba como un rectángulo blanco pegado encima. */
+}
+/* El canvas va absoluto: si participa del layout, su tamaño empuja al contenedor
+   y el contenedor le devuelve el tamaño. Bucle. */
+.escena-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+/* Mientras carga y si no hay 3D */
+.escena-lienzo::after {
+  content: attr(data-cargando);
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  color: var(--ink-soft);
+  opacity: 1;
+  transition: opacity 0.5s var(--ease);
+  pointer-events: none;
+}
+.escena-lienzo.escena-lista::after { opacity: 0; }
+.escena-lienzo.escena-sin-3d::after { content: attr(data-sin3d); }
+
+
+/* ---- La ficha ----
+   Flota POR ENCIMA de la escena y no la toca: la cámara ya no se corre para hacerle
+   lugar, así la imagen no se achica ni se mueve al abrirla. */
+.escena-ficha {
+  position: absolute;
+  right: var(--pad-x);
+  top: 50%;
+  transform: translateY(-50%) translateX(16px);
+  width: min(340px, 32vw);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+  border-radius: 14px;
+  padding: 26px 26px 28px;
+  opacity: 0;
+  transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
+  z-index: 3;
+}
+.escena-ficha.abierta { opacity: 1; transform: translateY(-50%) translateX(0); }
+.escena-ficha[hidden] { display: none; }
+
+.escena-ficha__titulo {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  margin-bottom: 12px;
+}
+.escena-ficha__texto { font-size: 15px; line-height: 1.45; }
+/* Los enlaces van adentro de la oración, subrayados donde se menciona el proyecto */
+.escena-ficha__texto a,
+.escena-ficha__despues a {
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+  transition: opacity 0.2s;
+}
+.escena-ficha__texto a:hover,
+.escena-ficha__despues a:hover { opacity: 0.55; }
+
+.escena-ficha__despues {
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.escena-ficha__despues[hidden] { display: none; }
+
+/* ---- El cuaderno, para hojear ---- */
+.escena-ficha__hojas { margin-top: 18px; }
+.escena-ficha__hojas[hidden] { display: none; }
+.escena-hojas__vista {
+  border-radius: 10px;
+  overflow: hidden;
+  /* Sin fondo: las hojas del cuaderno son PNG con transparencia y se ven recortadas
+     sobre la ficha, no dentro de un recuadro. */
+}
+.escena-hojas__vista img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46vh;
+  object-fit: contain;
+}
+.escena-hojas__pie[hidden] { display: none; }
+.escena-hojas__pie {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin-top: 10px;
+}
+.escena-hojas__ir {
+  width: 30px; height: 30px;
+  border: 0; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 18px; line-height: 1; color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.escena-hojas__ir:hover { background: rgba(0, 0, 0, 0.12); }
+.escena-hojas__num { font-size: 13px; color: var(--ink-soft); min-width: 46px; text-align: center; }
+/* El reproductor de Spotify dentro de la ficha */
+.escena-ficha__spotify { margin-top: 18px; min-height: 152px; position: relative; }
+.escena-ficha__spotify[hidden] { display: none; }
+.escena-ficha__spotify::after {
+  content: 'Cargando Spotify…';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--ink-soft);
+  border-radius: 12px; background: rgba(0, 0, 0, 0.03);
+  pointer-events: none;       /* si no, este cartel se come los clicks del reproductor */
+}
+.escena-ficha__spotify.cargado::after { display: none; }
+.escena-ficha__spotify.fallo::after { content: 'No se pudo cargar el reproductor (¿bloqueador de publicidad?).'; padding: 0 16px; text-align: center; }
+.escena-ficha:has(.escena-ficha__spotify:not([hidden])),
+.escena-ficha:has(.escena-ficha__hojas:not([hidden])) { width: min(400px, 36vw); }
+
+.escena-ficha__enlace {
+  display: inline-block;
+  margin-top: 18px;
+  margin-right: 18px;         /* puede haber más de un enlace, uno al lado del otro */
+  font-size: 15px;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+}
+.escena-ficha__enlace[hidden] { display: none; }
+.escena-ficha__cerrar {
+  position: absolute;
+  right: 14px; top: 12px;
+  width: 28px; height: 28px;
+  border: 0; background: none;
+  font-size: 22px; line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.escena-ficha__cerrar:hover { color: var(--ink); }
+
+/* ---- La intro de la home la esconde y la revela con todo lo demás ---- */
+html.home-intro .escena-seccion { opacity: 0; transform: translateY(22px); }
+html.home-intro.home-revealed .escena-seccion {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.9s var(--ease) 0.15s, transform 0.9s var(--ease) 0.15s;
+}
+html.home-intro.picking .escena-seccion { pointer-events: none; }
+
+/* ---- Chico ---- */
+@media (max-width: 860px) {
+  .escena-seccion { height: 78svh; }
+  .escena-ficha {
+    right: var(--pad-x); left: var(--pad-x);
+    top: auto; bottom: 8px;
+    width: auto;
+    transform: translateY(16px);
+  }
+  .escena-ficha.abierta { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escena-ficha { transition: opacity 0.2s linear; }
+}

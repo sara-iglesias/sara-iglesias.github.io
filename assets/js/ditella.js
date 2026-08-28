@@ -124,9 +124,13 @@ function dtCarousel(root, trackSel, prevSel, nextSel, opts) {
   if (!alpha) return;
   const spans = [...alpha.querySelectorAll('.row span')];
   if (!spans.length) return;
-  const R = 150;              // radio de influencia (px)
-  const MIN = 300, MAX = 900; // rango de peso variable
+  const R = 150;               // radio de influencia (px)
+  const MIN = 300, MAX = 900;  // rango de peso variable
   let mx = 0, my = 0, active = false, raf = null;
+  // Cada letra se queda con el mayor peso que alcanzó: no sólo la que se tocó de lleno,
+  // también las de alrededor, aunque hayan quedado a medio engrosar. Un segundo pase
+  // directo sobre una de ellas la puede seguir llevando hasta MAX.
+  const maxAlcanzado = new Map();
   function frame() {
     raf = null;
     for (const s of spans) {
@@ -136,7 +140,10 @@ function dtCarousel(root, trackSel, prevSel, nextSel, opts) {
       let t = active ? Math.max(0, 1 - d / R) : 0;
       t = t * t * (3 - 2 * t);            // smoothstep → transición suave
       const w = Math.round(MIN + t * (MAX - MIN));
-      s.style.fontVariationSettings = '"wght" ' + w;
+      const previo = maxAlcanzado.get(s) || MIN;
+      const final = Math.max(w, previo);
+      if (final !== previo) maxAlcanzado.set(s, final);
+      s.style.fontVariationSettings = '"wght" ' + final;
     }
   }
   const request = () => { if (!raf) raf = requestAnimationFrame(frame); };

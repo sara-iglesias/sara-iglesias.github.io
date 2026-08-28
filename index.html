@@ -11,16 +11,20 @@
   <meta name="description" content="Discover Sara's Design Portfolio." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <!-- Visor 3D (Google model-viewer) -->
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <link rel="stylesheet" href="assets/css/escena.css" />
 </head>
 <body>
 
   <!-- Botón para saltear la animación de intro -->
   <button class="intro-skip" id="introSkip" type="button" aria-label="Skip intro">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l11 7-11 7V5z" fill="currentColor"/><rect x="17.5" y="5" width="3" height="14" rx="1.2" fill="currentColor"/></svg>
+  </button>
+
+  <!-- Botón para volver arriba: aparece al llegar al final de la página -->
+  <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M12 5l-7 7M12 5l7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
   <!-- ======== CABECERA ======== -->
@@ -107,6 +111,7 @@
     </div>
   </section>
 
+
   <!-- ======== SERVICIOS (filtros de los trabajos) ======== -->
   <section class="section sub services-filter" id="services">
     <div class="services-grid" id="serviceFilters">
@@ -166,37 +171,28 @@
   <!-- Pill "View" (cursor custom sobre trabajos) -->
   <div class="view-pill" id="viewPill" aria-hidden="true">View</div>
 
-  <!-- ======== ABOUT + MODELO 3D ======== -->
+  <!-- ======== ABOUT ======== -->
   <section class="section" id="about">
     <div class="about-grid">
       <div class="about-left">
         <h2 class="io-reveal">About me</h2>
         <a class="btn io-reveal" href="assets/docs/CV_Iglesias-Sara_English.pdf" target="_blank" rel="noopener">Download Resume</a>
-        <div class="bio io-reveal">
-          <p>I'm a designer. I work in <strong>systems</strong>: I define the rules that hold a project together and bring them down to every piece — whether a publication, a website, an experience or an object.</p>
-          <p>My projects are varied, yet they share one logic: the criteria to handle my own or others' systems, attention to detail, and decisions made from the user — from whoever will receive the design.</p>
-          <p>I work with Adobe, Figma, Office, 3D and some code, and I bring AI into my daily workflow to quickly handle the repetitive and get to what matters sooner. I've learned to be adaptable: tools change all the time, and I know how to adapt to them.</p>
-        </div>
-      </div>
-      <div class="model-wrap io-reveal">
-        <model-viewer
-          src="https://framerusercontent.com/assets/hO8yQbpUSpw1TQ5v68keBMgbg.glb"
-          alt="3D model"
-          loading="lazy" reveal="auto"
-          scale="0.742 0.742 0.742"
-          camera-controls disable-zoom disable-tap
-          interaction-prompt="none"
-          shadow-intensity="0" shadow-softness="0.8"
-          exposure="1.35"
-          camera-orbit="0deg 67deg 145%"
-          min-camera-orbit="auto auto 10%"
-          max-camera-orbit="auto auto 400%"
-          field-of-view="45deg"
-          auto-rotate auto-rotate-delay="0" rotation-per-second="30deg"
-          touch-action="none">
-        </model-viewer>
       </div>
     </div>
+  </section>
+
+  <!-- ======== ESCENA 3D ======== -->
+  <section class="escena-seccion" id="escena">
+    <div class="escena-lienzo" id="escenaLienzo"
+         data-cargando="Loading the scene…"
+         data-sin3d="Interactive 3D scene (not available on this device)."></div>
+
+    <aside class="escena-ficha" id="escenaFicha" hidden>
+      <button class="escena-ficha__cerrar" type="button" aria-label="Close">&times;</button>
+      <h3 class="escena-ficha__titulo"></h3>
+      <p class="escena-ficha__texto"></p>
+      <a class="escena-ficha__enlace" target="_blank" rel="noopener" hidden></a>
+    </aside>
   </section>
 
   <!-- ======== EDUCACIÓN ======== -->
@@ -296,6 +292,17 @@
     </form>
   </section>
 
+  <!-- Pileta de bolitas: una por trabajo, paradas sobre la línea del footer -->
+  <div class="ball-pit" id="ballPit" aria-hidden="true">
+    <a class="ball" href="works/54.html" tabindex="-1" data-dark="1" style="--c:#FA0057" data-cover="https://framerusercontent.com/images/Vf9PunfYOCjhPooeXJTyuXSfieA.jpg" data-title="(+54)"><span class="ball-label">View</span></a>
+    <a class="ball" href="works/churba.html" tabindex="-1" style="--c:#B7CE00" data-cover="https://framerusercontent.com/images/eY4LY37EdcB2z1JdPeJqIEVQcTU.png" data-title="Churba at the Moderno"><span class="ball-label">View</span></a>
+    <a class="ball" href="works/forja.html" tabindex="-1" style="--c:#ACABA5" data-cover="https://framerusercontent.com/images/9kbESLGNbMliWoL4KhLMQIWA1M.jpg" data-title="Forja&reg;"><span class="ball-label">View</span></a>
+    <a class="ball" href="works/cero-al-infinito.html" tabindex="-1" data-dark="1" style="--c:#4E5612" data-cover="https://framerusercontent.com/images/MOZyp31Uoop8peq6VnGWcWrOClw.png" data-title="Cero al Infinito"><span class="ball-label">View</span></a>
+    <a class="ball" href="works/di-tella.html" tabindex="-1" data-dark="1" style="--c:#417DFF" data-cover="assets/img/ditella/home-cover.webp" data-title="Graphics at Di Tella"><span class="ball-label">View</span></a>
+    <a class="ball" href="works/nucleo.html" tabindex="-1" style="--c:#F0C800" data-cover="https://framerusercontent.com/images/zgIqb4Jg9HsqwlU9TlkvPMhrs4.png" data-title="N&uacute;cleo"><span class="ball-label">View</span></a>
+  </div>
+  <div class="ball-preview" id="ballPreview" aria-hidden="true"><img alt="" /></div>
+
   <!-- ======== FOOTER ======== -->
   <footer class="site-footer">
     <div class="footer-cols">
@@ -329,5 +336,6 @@
 
   <script>window.TYPE_WORDS = ["identities.", "experiences.", "solutions.", "systems."];</script>
   <script src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/escena.js"></script>
 </body>
 </html>
