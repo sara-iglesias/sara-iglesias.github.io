@@ -611,6 +611,7 @@ if (form && status) {
    como si el movimiento de la página las sacudiera. Al pasar el mouse por una:
    aparece "View"/"Ver" en la bolita y la portada del trabajo lo sigue de cerca. */
 (function () {
+  try {
   const pit = document.getElementById('ballPit');
   const balls = pit ? [...pit.querySelectorAll('.ball')] : [];
   if (!pit || !balls.length) return;
@@ -625,7 +626,11 @@ if (form && status) {
     W = r.width; H = r.height;
   }
   medir();
+  // El primer cuadro, con hojas de estilo todavía asentándose, puede medir 0.
+  // Un reintento en el siguiente cuadro evita que la pileta arranque colapsada.
+  if (!W || !H) requestAnimationFrame(medir);
   window.addEventListener('resize', medir);
+  pit.classList.add('is-physics');
 
   const cuerpos = balls.map((el, i) => ({
     el,
@@ -731,5 +736,10 @@ if (form && status) {
         preview.classList.remove('is-on');
       });
     });
+  }
+  } catch (err) {
+    // Si algo de la física falla, la pileta se queda en la fila prolija que ya
+    // pone el CSS por defecto (ver .ball-pit sin .is-physics): se sigue viendo.
+    console.warn('[bolitas] no se pudo iniciar la física', err);
   }
 })();
