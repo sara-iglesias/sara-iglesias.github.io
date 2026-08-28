@@ -645,10 +645,57 @@ if (form && status) {
     vx: (Math.random() - 0.5) * 1.2,
     vy: 0,
     entro: false,                  // true recién cuando toca el piso por primera vez
+    dragging: false,               // true mientras el mouse/dedo la sostiene
   }));
+
+  // ---- arrastre: cada bolita se puede tomar y mover con el mouse/dedo ----
+  balls.forEach((el, idx) => {
+    const c = cuerpos[idx];
+    let moved = false, startX = 0, startY = 0, lastX = 0, lastY = 0, lastT = 0;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      c.dragging = true;
+      c.vx = 0; c.vy = 0;
+      moved = false;
+      startX = lastX = e.clientX;
+      startY = lastY = e.clientY;
+      lastT = performance.now();
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* no-op */ }
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!c.dragging) return;
+      const rPit = pit.getBoundingClientRect();
+      const limiteW = W || rPit.width, limiteH = H || rPit.height;
+      let nx = e.clientX - rPit.left;
+      let ny = e.clientY - rPit.top;
+      nx = Math.min(Math.max(nx, R), limiteW - R);
+      ny = Math.min(Math.max(ny, R), limiteH - R);
+      c.x = nx; c.y = ny;
+      c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
+      if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) moved = true;
+      const ahora = performance.now();
+      const dt = Math.max(1, ahora - lastT);
+      // velocidad aprox. en "px por cuadro" (~16ms): al soltarla sigue con
+      // algo del impulso, como si la hubieras tirado.
+      c.vx = (e.clientX - lastX) / dt * 16;
+      c.vy = (e.clientY - lastY) / dt * 16;
+      lastX = e.clientX; lastY = e.clientY; lastT = ahora;
+    });
+    function soltar(e) {
+      if (!c.dragging) return;
+      c.dragging = false;
+      c.entro = true; // ya "aterrizó" una vez: respeta el techo de la pileta
+      try { el.releasePointerCapture(e.pointerId); } catch (_) { /* no-op */ }
+    }
+    el.addEventListener('pointerup', soltar);
+    el.addEventListener('pointercancel', soltar);
+    // si hubo arrastre, ese gesto no debe además navegar al trabajo
+    el.addEventListener('click', (e) => { if (moved) { e.preventDefault(); moved = false; } });
+  });
 
   function paso() {
     for (const c of cuerpos) {
+      if (c.dragging) continue;   // la mueve el puntero, no la física
       c.vy += G;
       // tope de velocidad asimétrico: caen con ganas, casi no suben
       if (c.vy > VMAX_ABAJO) c.vy = VMAX_ABAJO; else if (c.vy < -VMAX_ARRIBA) c.vy = -VMAX_ARRIBA;
@@ -683,19 +730,29 @@ if (form && status) {
           if (dist < min) {
             const superpos = (min - dist) / 2;
             const nx = dx / dist, ny = dy / dist;
-            a.x -= nx * superpos; a.y -= ny * superpos;
-            b.x += nx * superpos; b.y += ny * superpos;
-            const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-            if (rel < 0) {
-              const imp = -rel * 0.5;
-              a.vx -= imp * nx; a.vy -= imp * ny;
-              b.vx += imp * nx; b.vy += imp * ny;
+            if (a.dragging && !b.dragging) {
+              // la que se arrastra no se mueve por el choque: empuja a la otra
+              b.x += nx * superpos * 2; b.y += ny * superpos * 2;
+              b.vx += nx * 1.2; b.vy += ny * 1.2;
+            } else if (b.dragging && !a.dragging) {
+              a.x -= nx * superpos * 2; a.y -= ny * superpos * 2;
+              a.vx -= nx * 1.2; a.vy -= ny * 1.2;
+            } else if (!a.dragging && !b.dragging) {
+              a.x -= nx * superpos; a.y -= ny * superpos;
+              b.x += nx * superpos; b.y += ny * superpos;
+              const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+              if (rel < 0) {
+                const imp = -rel * 0.5;
+                a.vx -= imp * nx; a.vy -= imp * ny;
+                b.vx += imp * nx; b.vy += imp * ny;
+              }
             }
           }
         }
       }
     }
     for (const c of cuerpos) {
+      if (c.dragging) continue; // ya se pinta en vivo en pointermove
       c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
     }
   }

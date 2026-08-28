@@ -723,6 +723,7 @@ model-viewer { width: 100%; height: 100%; background: transparent; }
   display: grid;
   place-items: center;
   will-change: transform;
+  touch-action: none;  /* para poder arrastrarlas en mobile sin que scrollee la página */
 }
 /* Una vez que el JS de física arranca, pasan a manejarse por transform */
 .ball-pit.is-physics { justify-content: flex-start; gap: 0; }
