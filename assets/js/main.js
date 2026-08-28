@@ -619,9 +619,10 @@ if (form && status) {
   const previewImg = preview ? preview.querySelector('img') : null;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const R = 26, G = 0.38, REBOTE = 0.2, FRICCION = 0.8;
-  // el tope de subida es mucho más chico que el de caída: pesan, no flotan
-  const VMAX_ABAJO = 9, VMAX_ARRIBA = 1.6, VMAX_X = 4;
+  const R = 26, G = 0.22, REBOTE = 0.3, FRICCION = 0.85;
+  // el tope de subida es más chico que el de caída: pesan, pero el scroll
+  // igual las hace moverse un poco (no quedan como pegadas/congeladas)
+  const VMAX_ABAJO = 8, VMAX_ARRIBA = 3, VMAX_X = 4;
   let W = 0, H = 0;
   function medir() {
     const r = pit.getBoundingClientRect();
@@ -634,11 +635,14 @@ if (form && status) {
   window.addEventListener('resize', medir);
   pit.classList.add('is-physics');
 
+  // arrancan agrupadas del lado derecho de la pileta, no repartidas por todo
+  // el ancho — se apilan entre sí al caer, como pide el diseño.
+  const xDerecha = Math.min(Math.max((W || 300) * 0.82, R), (W || 300) - R);
   const cuerpos = balls.map((el, i) => ({
     el,
-    x: Math.min(Math.max((W || 300) * ((i + 1) / (balls.length + 1)), R), (W || 300) - R),
+    x: Math.min(Math.max(xDerecha - (i % 3) * (R * 0.7), R), (W || 300) - R),
     y: -30 - i * 38,               // arrancan arriba de la pileta: caen al cargar
-    vx: (Math.random() - 0.5) * 2.4,
+    vx: (Math.random() - 0.5) * 1.2,
     vy: 0,
     entro: false,                  // true recién cuando toca el piso por primera vez
   }));
@@ -698,9 +702,9 @@ if (form && status) {
 
   if (reduceMotion) {
     // sin movimiento: quedan asentadas prolijas sobre la línea, sin caer ni temblar
-    const paso2 = Math.max(1, W - 2 * R) / Math.max(1, cuerpos.length - 1);
+    // mismo criterio que en reposo: agrupadas hacia la derecha, no repartidas
     cuerpos.forEach((c, i) => {
-      c.x = R + i * paso2;
+      c.x = Math.min(Math.max(xDerecha - (i % 3) * (R * 0.7), R), W - R);
       c.y = H - R;
       c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
     });
@@ -712,11 +716,11 @@ if (form && status) {
       ultimoScrollY = window.scrollY;
       if (!delta) return;
       // empujón mucho más sutil: apenas una cosquilla, no un golpe
-      // empujón mínimo: apenas las hace temblar, no las levanta
-      const empuje = Math.max(-0.8, Math.min(0.8, delta * 0.012));
+      // empujón moderado: se notan al scrollear, sin dispararse arriba del todo
+      const empuje = Math.max(-2.2, Math.min(2.2, delta * 0.03));
       cuerpos.forEach((c) => {
-        c.vy -= empuje * (0.25 + Math.random() * 0.15);
-        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.2;
+        c.vy -= empuje * (0.35 + Math.random() * 0.25);
+        c.vx += (Math.random() - 0.5) * Math.abs(empuje) * 0.35;
       });
     }, { passive: true });
   }
