@@ -652,8 +652,13 @@ if (form && status) {
   balls.forEach((el, idx) => {
     const c = cuerpos[idx];
     let moved = false, startX = 0, startY = 0, lastX = 0, lastY = 0, lastT = 0;
+    // por ser un <a href>, el navegador intenta arrancar SU propio drag del
+    // link (para arrastrarlo a otra pestaña, etc.) y eso pisa el arrastre
+    // nuestro: lo frenamos acá además del draggable="false" en el HTML.
+    el.addEventListener('dragstart', (e) => e.preventDefault());
     el.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
       c.dragging = true;
       c.vx = 0; c.vy = 0;
       moved = false;
@@ -785,9 +790,14 @@ if (form && status) {
   // ---- hover: "View"/"Ver" en la bolita + portada siguiendo al mouse ----
   if (preview && previewImg) {
     let tx = 0, ty = 0, px = 0, py = 0, seguido = false, rafPrev = null;
+    // tamaño de la miniatura (ver .ball-preview / img en el CSS) — para saber
+    // si entra a la derecha/abajo del cursor o hay que abrirla al otro lado
+    const ANCHO_PREVIEW = 150, ALTO_PREVIEW = 96, MARGEN = 18, AIRE = 10;
     function pintarPreview() {
       preview.style.setProperty('--x', px + 'px');
       preview.style.setProperty('--y', py + 'px');
+      preview.classList.toggle('flip-x', px + MARGEN + ANCHO_PREVIEW + AIRE > window.innerWidth);
+      preview.classList.toggle('flip-y', py + MARGEN + ALTO_PREVIEW + AIRE > window.innerHeight);
     }
     function tickPreview() {
       px += (tx - px) * 0.3;

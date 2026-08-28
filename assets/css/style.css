@@ -724,6 +724,8 @@ model-viewer { width: 100%; height: 100%; background: transparent; }
   place-items: center;
   will-change: transform;
   touch-action: none;  /* para poder arrastrarlas en mobile sin que scrollee la página */
+  -webkit-user-drag: none;  /* si no, el navegador arranca su propio drag-and-drop del link */
+  user-select: none;
 }
 /* Una vez que el JS de física arranca, pasan a manejarse por transform */
 .ball-pit.is-physics { justify-content: flex-start; gap: 0; }
@@ -757,6 +759,10 @@ model-viewer { width: 100%; height: 100%; background: transparent; }
   transition: opacity 0.18s var(--ease);
   will-change: transform;
 }
+/* si no entra a la derecha y/o abajo del cursor, se abre para el otro lado */
+.ball-preview.flip-x { transform: translate3d(var(--x), var(--y), 0) translate(calc(-100% - 18px), 18px); }
+.ball-preview.flip-y { transform: translate3d(var(--x), var(--y), 0) translate(18px, calc(-100% - 18px)); }
+.ball-preview.flip-x.flip-y { transform: translate3d(var(--x), var(--y), 0) translate(calc(-100% - 18px), calc(-100% - 18px)); }
 .ball-preview.is-on { opacity: 1; }
 .ball-preview img { width: 100%; height: 96px; object-fit: cover; display: block; }
 
