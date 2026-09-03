@@ -336,6 +336,31 @@
 
   <script>window.TYPE_WORDS = ["identities.", "experiences.", "solutions.", "systems."];</script>
   <script src="assets/js/main.js"></script>
-  <script type="module" src="assets/js/escena.js"></script>
+  <script>
+  // La escena 3D (Three.js + modelo .glb + decoder Draco, ~2.5MB) recién se
+  // descarga cuando la sección está por entrar en pantalla. Antes se cargaba
+  // apenas terminaba la intro, sin importar si el usuario llegaba a scrollear
+  // hasta ahí: por eso tardaba.
+  (function () {
+    var seccion = document.getElementById('escena');
+    if (!seccion) return;
+    var cargada = false;
+    function cargar() {
+      if (cargada) return;
+      cargada = true;
+      import('./assets/js/escena.js');
+    }
+    if ('IntersectionObserver' in window) {
+      var obs = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (e) {
+          if (e.isIntersecting) { obs.disconnect(); cargar(); }
+        });
+      }, { rootMargin: '1000px 0px' });
+      obs.observe(seccion);
+    } else {
+      cargar();
+    }
+  })();
+  </script>
 </body>
 </html>
