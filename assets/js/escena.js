@@ -779,9 +779,22 @@ export function iniciarEscena(lienzo, ficha) {
   window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && elegido) elegir(null); });
   window.addEventListener('resize', medir);
 
+  // Mientras la escena está fuera de pantalla (el usuario scrolleó para abajo,
+  // a los trabajos o al footer) se deja de renderizar: antes seguía dibujando
+  // el cuadro entero a 60fps para siempre, compitiendo por GPU con el resto de
+  // la página y poniendo pesado el scroll en el resto del sitio.
+  let visible = true;
+  if ('IntersectionObserver' in window) {
+    const ioVis = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => { visible = e.isIntersecting; });
+    }, { rootMargin: '200px 0px' });
+    ioVis.observe(lienzo);
+  }
+
   /* ---- bucle ---- */
   function cuadro() {
     requestAnimationFrame(cuadro);
+    if (!visible) return;
     const dt = Math.min(reloj.getDelta(), 0.1);
     if (mezclador) mezclador.update(dt);
 

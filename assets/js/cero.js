@@ -101,9 +101,16 @@
     fan.addEventListener('pointerleave', () => fan.classList.remove('hovering'));
   }
 
+  // En pantallas angostas el abanico se abre menos: si no, las postales de
+  // las puntas quedan afuera de la pantalla (el spread estaba pensado en
+  // píxeles fijos, para el ancho de un desktop).
+  function escala() {
+    return fan.clientWidth < 480 ? 0.45 : fan.clientWidth < 700 ? 0.7 : 1;
+  }
+
   const state = cards.map((_, i) => {
     const t = i - (n - 1) / 2;
-    return { x: t * 46, y: Math.abs(t) * 12, rot: t * 9 };
+    return { x: t * 46 * escala(), y: Math.abs(t) * 12, rot: t * 9 };
   });
 
   // El centrado va en el propio transform (calc -50%), así funciona con
@@ -116,17 +123,30 @@
   cards.forEach((c, i) => { c.style.zIndex = i + 1; paint(i); });
 
   fan.addEventListener('mouseenter', () => {
+    const e = escala();
     state.forEach((s, i) => {
       const t = i - (n - 1) / 2;
-      s.x = t * 78; s.rot = t * 13;
+      s.x = t * 78 * e; s.rot = t * 13;
       paint(i);
     });
   });
   fan.addEventListener('mouseleave', () => {
     if (fan.dataset.moved === '1') return;
+    const e = escala();
     state.forEach((s, i) => {
       const t = i - (n - 1) / 2;
-      s.x = t * 46; s.rot = t * 9;
+      s.x = t * 46 * e; s.rot = t * 9;
+      paint(i);
+    });
+  });
+  // Al rotar el celular o cambiar de tamaño la ventana, se recalcula el
+  // abanico — salvo que el usuario ya haya arrastrado alguna postal.
+  window.addEventListener('resize', () => {
+    if (fan.dataset.moved === '1') return;
+    const e = escala();
+    state.forEach((s, i) => {
+      const t = i - (n - 1) / 2;
+      s.x = t * 46 * e; s.rot = t * 9;
       paint(i);
     });
   });

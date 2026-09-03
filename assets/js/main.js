@@ -739,7 +739,18 @@ if (form && status) {
       c.el.style.transform = 'translate3d(' + Math.round(c.x - R) + 'px,' + Math.round(c.y - R) + 'px,0)';
     });
   } else {
-    (function tick() { paso(); requestAnimationFrame(tick); })();
+    // Se frena mientras la pileta no está a la vista (la mayor parte del
+    // scroll, ya que vive en el footer): antes corría la física a 60fps todo
+    // el tiempo, aunque estuviera lejísimos, compitiendo por el mismo hilo
+    // principal que el resto de la página.
+    let visiblePit = true;
+    if ('IntersectionObserver' in window) {
+      const ioPit = new IntersectionObserver((entradas) => {
+        entradas.forEach((e) => { visiblePit = e.isIntersecting; });
+      }, { rootMargin: '200px 0px' });
+      ioPit.observe(pit);
+    }
+    (function tick() { if (visiblePit) paso(); requestAnimationFrame(tick); })();
     let ultimoScrollY = window.scrollY;
     window.addEventListener('scroll', () => {
       const delta = window.scrollY - ultimoScrollY;

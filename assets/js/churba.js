@@ -76,9 +76,16 @@
     fan.addEventListener('pointerleave', () => fan.classList.remove('hovering'));
   }
 
+  // En pantallas angostas el abanico se abre menos: si no, las postales de
+  // las puntas quedan afuera de la pantalla (el spread estaba pensado en
+  // píxeles fijos, para el ancho de un desktop).
+  function escala() {
+    return fan.clientWidth < 480 ? 0.45 : fan.clientWidth < 700 ? 0.7 : 1;
+  }
+
   const state = cards.map((_, i) => {
     const t = i - (n - 1) / 2;
-    return { x: t * 46, y: Math.abs(t) * 12, rot: t * 9 };
+    return { x: t * 46 * escala(), y: Math.abs(t) * 12, rot: t * 9 };
   });
 
   function paint(i) {
@@ -88,17 +95,30 @@
   cards.forEach((c, i) => { c.style.zIndex = i + 1; paint(i); });
 
   fan.addEventListener('mouseenter', () => {
+    const e = escala();
     state.forEach((s, i) => {
       const t = i - (n - 1) / 2;
-      s.x = t * 78; s.rot = t * 13;
+      s.x = t * 78 * e; s.rot = t * 13;
       paint(i);
     });
   });
   fan.addEventListener('mouseleave', () => {
     if (fan.dataset.moved === '1') return;
+    const e = escala();
     state.forEach((s, i) => {
       const t = i - (n - 1) / 2;
-      s.x = t * 46; s.rot = t * 9;
+      s.x = t * 46 * e; s.rot = t * 9;
+      paint(i);
+    });
+  });
+  // Al rotar el celular o cambiar de tamaño la ventana, se recalcula el
+  // abanico — salvo que el usuario ya haya arrastrado alguna postal.
+  window.addEventListener('resize', () => {
+    if (fan.dataset.moved === '1') return;
+    const e = escala();
+    state.forEach((s, i) => {
+      const t = i - (n - 1) / 2;
+      s.x = t * 46 * e; s.rot = t * 9;
       paint(i);
     });
   });
@@ -133,9 +153,10 @@
 })();
 
 /* ---------- 3. Cita gigante: "spotlight" gradual alrededor del mouse ----------
-   La letra bajo el cursor crece un poco y se pone verde; las de alrededor,
-   gradualmente menos. "Diseñar" ya está en verde; al pasarle el mouse, toda
-   la página se pone verde y las letras en blanco. */
+   La letra bajo el cursor crece un poco; las de alrededor, gradualmente
+   menos. "Diseñar" ya está en verde. (Antes, además, tocar una letra
+   pintaba toda la página de verde — se sacó: cambiaba el color de la
+   pantalla entera, cosa que no queremos en ningún lado del sitio.) */
 (function () {
   const p = document.querySelector('.big-quote [data-quote]');
   if (!p) return;
@@ -194,27 +215,6 @@
   p.addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; active = true; request(); });
   p.addEventListener('pointerleave', () => { active = false; request(); });
 
-  // El hover previsualiza el estado OPUESTO al fijado; el click lo fija.
-  // Sólo cuenta cuando el mouse está EFECTIVAMENTE sobre una letra (no en el
-  // espacio vacío a la derecha de las líneas cortas).
-  {
-    let committed = false;
-    let previewing = false;
-    const sync = () => {
-      const green = previewing ? !committed : committed;
-      document.body.classList.toggle('quote-green', green);
-    };
-    const overWord = (e) => !!(e.target && e.target.closest && e.target.closest('.ch'));
-    p.addEventListener('pointermove', (e) => {
-      const on = overWord(e);
-      if (on !== previewing) { previewing = on; sync(); }
-    });
-    p.addEventListener('pointerleave', () => { if (previewing) { previewing = false; sync(); } });
-    p.addEventListener('click', (e) => {
-      if (!overWord(e)) return;
-      committed = !committed; previewing = false; sync();
-    });
-  }
 })();
 
 /* ---------- Video de intro: click para pausar / reanudar ---------- */

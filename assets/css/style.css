@@ -20,7 +20,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+html { scroll-behavior: smooth; }
 [id] { scroll-margin-top: 96px; }
 
 body {
@@ -778,7 +778,9 @@ model-viewer { width: 100%; height: 100%; background: transparent; }
   .split { grid-template-columns: 1fr; }
   .split h2 { position: static; }
   .services-grid { grid-template-columns: 1fr; }
-  .services-filter .services-grid { grid-template-columns: 1fr; min-height: 0; }
+  .services-filter .services-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; min-height: 0; }
+  .svc-chip { padding: 14px 14px; }
+  .svc-chip__name { font-size: 14px; }
   .svc { grid-column: span 1; }
   .tools-rows .trow { grid-template-columns: 1fr; gap: 10px; }
   .footer-cols { grid-template-columns: 1fr 1fr; }

@@ -242,9 +242,15 @@ function dtCarousel(root, trackSel, prevSel, nextSel, opts) {
     if (fan.dataset.moved !== '1') fan.classList.add('hovering');
   });
   fan.addEventListener('pointerleave', () => fan.classList.remove('hovering'));
+  // En pantallas angostas el abanico se abre menos: si no, los folletos de
+  // las puntas quedan afuera de la pantalla (el spread estaba pensado en
+  // píxeles fijos, para el ancho de un desktop).
+  function escala() {
+    return fan.clientWidth < 480 ? 0.45 : fan.clientWidth < 700 ? 0.7 : 1;
+  }
   const state = cards.map((_, i) => {
     const t = i - (n - 1) / 2;
-    return { x: t * 52, y: Math.abs(t) * 14, rot: t * 9 };
+    return { x: t * 52 * escala(), y: Math.abs(t) * 14, rot: t * 9 };
   });
   const paint = (i) => {
     const s = state[i];
@@ -252,11 +258,20 @@ function dtCarousel(root, trackSel, prevSel, nextSel, opts) {
   };
   cards.forEach((c, i) => { c.style.zIndex = i + 1; paint(i); });
   fan.addEventListener('mouseenter', () => {
-    state.forEach((s, i) => { const t = i - (n - 1) / 2; s.x = t * 88; s.rot = t * 13; paint(i); });
+    const e = escala();
+    state.forEach((s, i) => { const t = i - (n - 1) / 2; s.x = t * 88 * e; s.rot = t * 13; paint(i); });
   });
   fan.addEventListener('mouseleave', () => {
     if (fan.dataset.moved === '1') return;
-    state.forEach((s, i) => { const t = i - (n - 1) / 2; s.x = t * 52; s.rot = t * 9; paint(i); });
+    const e = escala();
+    state.forEach((s, i) => { const t = i - (n - 1) / 2; s.x = t * 52 * e; s.rot = t * 9; paint(i); });
+  });
+  // Al rotar el celular o cambiar de tamaño la ventana, se recalcula el
+  // abanico — salvo que el usuario ya haya arrastrado un folleto.
+  window.addEventListener('resize', () => {
+    if (fan.dataset.moved === '1') return;
+    const e = escala();
+    state.forEach((s, i) => { const t = i - (n - 1) / 2; s.x = t * 52 * e; s.rot = t * 9; paint(i); });
   });
   cards.forEach((card, i) => {
     let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false;

@@ -471,10 +471,7 @@
 
 /* Plano del recorrido: PNG transparente que toma el color del fondo de la página */
 .case-media.plan img { background: transparent; }
-/* En modo verde se muestra la versión pensada para fondo verde */
 .case-media.plan .on-green { display: none; }
-body.quote-green .case-media.plan .on-white { display: none; }
-body.quote-green .case-media.plan .on-green { display: block; }
 
 
 /* ---------- Churba: libro realista de doble página ---------- */
@@ -616,15 +613,8 @@ html[lang="en"] .big-quote .ch.green { font-weight: 500; }   /* "Designing" sin 
   max-width: 100%;
 }
 
-/* ---------- Fondo: blanco por defecto en todas las páginas ----------
-   Sólo Churba cambia de color con el toggle de la cita (.quote-green). */
-body.case { transition: background-color 0.45s var(--ease); }
-
-body.quote-green { background: #B7CE00; }
-/* Sobre verde las letras son blancas; el spotlight las vira a negro con inline !important. */
-body.quote-green .big-quote .ch { color: #fff !important; -webkit-text-stroke: 0 !important; }
-/* "Diseñar" queda en negro para seguir distinguiéndose */
-body.quote-green .big-quote .ch.green { color: #000 !important; }
+/* ---------- Fondo: blanco en todas las páginas de trabajos ---------- */
+body.case { background: #fff; }
 
 @media (max-width: 900px) {
   .book { width: 92vw; }
@@ -1187,6 +1177,7 @@ body.ditella .dt-social { padding-top: 120px; padding-bottom: 130px; }
   display: grid; place-items: center; transition: background 0.2s; }
 .pj-arrow:hover { background: rgba(0,0,0,0.82); }
 .pj-arrow.prev { left: -64px; } .pj-arrow.next { right: -64px; }
+@media (max-width: 900px) { .pj-arrow.prev { left: 4px; } .pj-arrow.next { right: 4px; } }
 
 /* Cartel: el mockup centrado (más chico) con el cartel web superpuesto */
 .cartel-final { padding: 120px var(--pad-x) 40px; display: flex; justify-content: center; }
@@ -1204,7 +1195,10 @@ body.ditella .dt-social { padding-top: 120px; padding-bottom: 130px; }
 .cf-web.dragging { cursor: grabbing; transition: none; box-shadow: 0 26px 50px rgba(0,0,0,0.32); }
 @media (max-width: 900px) {
   .cf-stage { width: 92vw; }
-  .cf-web { width: 34%; left: -8%; }
+  /* En desktop el mockup no ocupa toda la pantalla, así que "mitad fuera" cae
+     dentro de la página igual. Acá el mockup ya es casi todo el ancho, así que
+     el cartel queda adentro (con un pelín de superposición al borde). */
+  .cf-web { width: 34%; left: 3%; }
 }
 
 @media (max-width: 900px) {
@@ -1245,7 +1239,6 @@ body.ditella .dt-social { padding-top: 120px; padding-bottom: 130px; }
 }
 .dt-piece:hover { transform: translateZ(95px); }
 .dt-piece:hover img { box-shadow: 0 26px 40px rgba(0,0,0,0.28), 0 10px 16px rgba(0,0,0,0.18); }
-@media (max-width: 900px) { .dt-plane { transform: rotateX(25deg) rotateZ(-15deg); } }
 
 /* Piezas de la portada como links a su sección + scroll suave */
 .dt-piece { display: block; text-decoration: none; }
