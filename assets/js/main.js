@@ -4,6 +4,20 @@
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------- Grain natural (todo el sitio, solo compu) ----------
+   El ruido es una textura fija (un mosaico de feTurbulence que el navegador
+   rasteriza UNA vez y luego tilea, ver .grain-layer en style.css). El
+   movimiento lo hace el CSS desplazando la capa a saltos, que es trabajo de
+   GPU y no cuesta nada. La capa se sigue inyectando siempre; en mobile queda
+   oculta por CSS (más liviano que hacerlo acá). */
+(function () {
+  if (document.querySelector('.grain-layer')) return;
+  const layer = document.createElement('div');
+  layer.className = 'grain-layer';
+  layer.setAttribute('aria-hidden', 'true');
+  (document.body || document.documentElement).appendChild(layer);
+})();
+
 /* ---------- 3D: girar sólo mientras se ve en pantalla ----------
    Un <model-viewer> con auto-rotate repinta en cada cuadro aunque esté fuera
    de vista. Lo frenamos cuando no se ve. */
@@ -517,6 +531,28 @@ if (form && status) {
   window.addEventListener('scroll', function () {
     if (!ticking) { ticking = true; requestAnimationFrame(update); }
   }, { passive: true });
+})();
+
+/* ---------- Home: el fondo cambia según el trabajo en hover (solo con mouse) ----------
+   En touch (mobile/tablet) esto no se activa: ahí "hover" es en realidad el
+   dedo tocando, y cambiar el fondo de toda la pantalla al tocar un trabajo
+   no se ve bien y además queda pisado por el press. */
+(function () {
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  const cards = [...document.querySelectorAll('.work-card[data-bg]')];
+  if (!cards.length) return;
+  const reset = () => {
+    document.body.style.backgroundColor = '';
+    document.body.classList.remove('works-dark', 'works-bright');
+  };
+  cards.forEach((c) => {
+    c.addEventListener('pointerenter', () => {
+      document.body.style.backgroundColor = c.dataset.bg;
+      document.body.classList.toggle('works-dark', c.dataset.dark === '1');
+      document.body.classList.toggle('works-bright', c.dataset.bright === '1');
+    });
+    c.addEventListener('pointerleave', reset);
+  });
 })();
 
 /* ---------- Servicios que filtran los trabajos (AND) ---------- */

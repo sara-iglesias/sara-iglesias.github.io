@@ -58,32 +58,31 @@
    Flota POR ENCIMA de la escena y no la toca: la cámara ya no se corre para hacerle
    lugar, así la imagen no se achica ni se mueve al abrirla. */
 .escena-ficha {
-  /* Siempre centrada sobre la escena, sin importar el ancho de pantalla. */
   position: absolute;
-  left: 50%;
+  right: var(--pad-x);
   top: 50%;
-  transform: translate(-50%, -50%) scale(0.97);
-  width: min(300px, 86vw);
+  transform: translateY(-50%) translateX(16px);
+  width: min(340px, 32vw);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
   border-radius: 14px;
-  padding: 20px 22px 22px;
+  padding: 26px 26px 28px;
   opacity: 0;
   transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
   z-index: 3;
 }
-.escena-ficha.abierta { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.escena-ficha.abierta { opacity: 1; transform: translateY(-50%) translateX(0); }
 .escena-ficha[hidden] { display: none; }
 
 .escena-ficha__titulo {
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 500;
   letter-spacing: var(--track-tight);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
-.escena-ficha__texto { font-size: 13px; line-height: 1.45; }
+.escena-ficha__texto { font-size: 15px; line-height: 1.45; }
 /* Los enlaces van adentro de la oración, subrayados donde se menciona el proyecto */
 .escena-ficha__texto a,
 .escena-ficha__despues a {
@@ -95,8 +94,8 @@
 .escena-ficha__despues a:hover { opacity: 0.55; }
 
 .escena-ficha__despues {
-  margin-top: 14px;
-  font-size: 13px;
+  margin-top: 16px;
+  font-size: 15px;
   line-height: 1.45;
 }
 .escena-ficha__despues[hidden] { display: none; }
@@ -146,13 +145,13 @@
 .escena-ficha__spotify.cargado::after { display: none; }
 .escena-ficha__spotify.fallo::after { content: 'No se pudo cargar el reproductor (¿bloqueador de publicidad?).'; padding: 0 16px; text-align: center; }
 .escena-ficha:has(.escena-ficha__spotify:not([hidden])),
-.escena-ficha:has(.escena-ficha__hojas:not([hidden])) { width: min(340px, 86vw); }
+.escena-ficha:has(.escena-ficha__hojas:not([hidden])) { width: min(400px, 36vw); }
 
 .escena-ficha__enlace {
   display: inline-block;
-  margin-top: 16px;
-  margin-right: 16px;         /* puede haber más de un enlace, uno al lado del otro */
-  font-size: 13px;
+  margin-top: 18px;
+  margin-right: 18px;         /* puede haber más de un enlace, uno al lado del otro */
+  font-size: 15px;
   border-bottom: 1px solid var(--ink);
   padding-bottom: 1px;
 }
@@ -182,10 +181,20 @@ html.home-intro.picking .escena-seccion { pointer-events: none; }
 @media (max-width: 860px) {
   .escena-seccion { height: 78svh; }
   .escena-ficha {
-    /* Sigue centrada; sólo se achica un poco más para no tapar toda la escena. */
+    /* Sólo en mobile: centrada en vez de pegada a la derecha (donde se cortaba
+       o quedaba muy angosta), y más chica. En compu queda como estaba. */
+    right: auto; left: 50%;
+    transform: translate(-50%, -50%) scale(0.97);
     width: min(270px, 88vw);
     padding: 16px 18px 18px;
   }
+  .escena-ficha.abierta { transform: translate(-50%, -50%) scale(1); }
+  .escena-ficha__titulo { font-size: 19px; margin-bottom: 10px; }
+  .escena-ficha__texto,
+  .escena-ficha__despues,
+  .escena-ficha__enlace { font-size: 13px; }
+  .escena-ficha__despues { margin-top: 14px; }
+  .escena-ficha__enlace { margin-top: 16px; margin-right: 16px; }
   .escena-ficha:has(.escena-ficha__spotify:not([hidden])),
   .escena-ficha:has(.escena-ficha__hojas:not([hidden])) { width: min(300px, 88vw); }
 }
